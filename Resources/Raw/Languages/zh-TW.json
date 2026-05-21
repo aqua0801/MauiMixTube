@@ -1,0 +1,69 @@
+{
+    "Sidebar_Playlist" : "個歌單",
+    "Sidebar_Playlists" : "個歌單",
+    "Sidebar_Library" : "播放清單庫",
+    "Sidebar_Search_PlaceHolder":"篩選播放清單…",
+    "Sidebar_Quick_Access":"快速存取",
+    "Sidebar_Liked_Songs":"最愛歌曲",
+    "Sidebar_Recently_Played":"最近播放",
+    "Settings":"設定",
+    "Playlist":"歌單",
+    "Playlists":"歌單",
+
+    "Album_Button":"曲目",
+    "Lyrics_Button":"歌詞",
+
+    "Playing_From" : "正在播放" ,
+    "Nothing_Is_Playing":"沒有播放中的歌單",
+    "Lyrics_PlaceHolder":"歌詞將會出現在此…",
+
+    "Topbar_Search_PlaceHolder":"搜尋曲名, 演出者, 專輯…",
+
+    "Settings_Title" : "偏好設定",
+    "Settings_General" : "一般設置",
+    "Settings_Player" : "播放",
+    "Settings_Cache" : "快取",
+    "Settings_Fetch" : "抓取設定",
+    "Settings_About" : "關於",
+
+    "Settings_Language" : "語言",
+    "Settings_Appearance" : "外觀",
+    "Settings_Theme" : "主題",
+
+    "Settings_Audio" : "音效",
+    "Settings_DefaultVolume" : "預設音量",
+
+    "Settings_Quality" : "品質",
+    "Settings_AudioQuality" : "音訊品質",
+    "Settings_AudioQualityDesc" : "決定抓取媒體來源時的音訊位元率",
+
+    "Settings_Processing" : "後處理",
+    "Settings_LoudnessNorm" : "響度標準化",
+    "Settings_LoudnessNormDesc" : "啟用響度平衡演算法 將所有音訊來源輸出優化至統一的響度標準",
+
+    "Settings_Storage" : "儲存",
+    "Settings_MaxCacheSize" : "最大快取大小 (設定為-1 表示不啟用)",
+    "Settings_CurrentUsage" : "目前使用量 (MB)",
+
+    "Settings_Management" : "管理",
+    "Settings_ClearAudioCache" : "清除音效快取",
+    "Settings_ClearAudioCacheDesc" : "音效快取用於繞過串流延遲 加快音樂載入速度",
+    "Settings_ClearMetaCache" : "清除中繼資料",
+    "Settings_ClearMetaCacheDesc" : "中繼資料用於加快專輯預覽與圖片載入延遲 同時在媒體來源網址過期前提高串流反應速度",
+
+    "Settings_OpenCacheDir" : "開啟快取路徑",
+    "Settings_Clear" : "清除",
+    "Settings_Open" : "開啟",
+
+    "Settings_Network" : "網路",
+    "Settings_MaxConcurrent" : "最大抓取併發數",
+    "Settings_MaxConcurrentDesc" : "允許多少執行緒同時間處理抓取服務 數量越多並行處理速度越快但具有更大的硬體壓力",
+    "Settings_FetchPageSize":"預覽單次抓取數",
+    "Settings_FetchPageSizeDesc":"觸發專輯預覽時向後抓取最多多少筆中繼資料",
+    "Settings_MaxRetry" : "最大重新嘗試次數",
+    "Settings_MaxRetryDesc" : "單次抓取服務最多嘗試次數 超過則放棄",
+
+    "Settings_SourceCode" : "開源程式碼",
+    "Settings_Licenses" : "開源授權"
+
+}

@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path=".//MauiMixTube.Generators/MauiMixTube.Generators.csproj" Id="10469fea-f69e-4b34-8bc2-2d74094efbaa" />
+  <Project Path=".//MauiMixTube/MauiMixTube.csproj" />
+</Solution>

@@ -1,0 +1,757 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
+             xmlns:vm="clr-namespace:MauiMixTube.ViewModels"
+             xmlns:managers="clr-namespace:MauiMixTube.Managers"
+             xmlns:converters="clr-namespace:MauiMixTube.Converters"
+             xmlns:helper="clr-namespace:MauiMixTube.Helper"
+             x:Class="MauiMixTube.SettingsPage"
+             Shell.NavBarIsVisible="False">
+
+    <!-- Root grid: full screen -->
+    <Grid ColumnDefinitions="200,*">
+
+        <!-- ══════════════════════════════════════════
+             LEFT NAV PANEL
+             ══════════════════════════════════════════ -->
+        <Border Grid.Column="0"
+                BackgroundColor="{AppThemeBinding Light={StaticResource LightSidebar},
+                                                  Dark={StaticResource DarkSidebar}}"
+                StrokeThickness="1"
+                Stroke="{AppThemeBinding Light={StaticResource LightDivider},
+                                         Dark={StaticResource DarkDivider}}"
+                StrokeShape="RoundRectangle 0,0,20,0">
+
+            <Grid RowDefinitions="Auto,*,Auto"
+                  Padding="16,52,16,24">
+
+                <!-- Back button + title -->
+                <Grid Grid.Row="0"
+                      ColumnDefinitions="36,*"
+                      Margin="0,0,0,28">
+                    <Button Grid.Column="0"
+                            Text="&#xe5c4;"
+                            FontFamily="MaterialIcons-Regular"
+                            Style="{StaticResource TopBarButtonStyle}"
+                            FontSize="20"
+                            Clicked="OnBackClicked" />
+                    <Label Grid.Column="1"
+                           Text="{Binding Path=[Settings_Title] ,Source={x:Static managers:LocalizationManager.Instance}}"
+                           Style="{StaticResource TitleLabel}"
+                           FontSize="16"
+                           VerticalOptions="Center"
+                           Margin="8,0" />
+                </Grid>
+
+                <!-- Nav items -->
+                <VerticalStackLayout Grid.Row="1" Spacing="4">
+
+                    <!-- General -->
+                    <Border Style="{StaticResource NavItemStyle}">
+                        <Border.Triggers>
+                            <DataTrigger TargetType="Border"
+                                         Binding="{Binding ActiveSection}"
+                                         Value="General">
+                                <Setter Property="BackgroundColor" Value="{AppThemeBinding Light = {StaticResource LightSidebarItemActive}, Dark = {StaticResource DarkSidebarItemActive}}">
+                                </Setter>
+                            </DataTrigger>
+                        </Border.Triggers>
+                        <Grid ColumnDefinitions="28,*">
+                            <Label Grid.Column="0"
+                                   Text="&#xe8b8;"
+                                   FontFamily="MaterialIcons-Regular"
+                                   FontSize="18"
+                                   VerticalOptions="Center"
+                                   TextColor="{AppThemeBinding Light={StaticResource LightPrimary}, Dark={StaticResource DarkPrimary}}">
+                            </Label>
+                            <Label Grid.Column="1"
+                                   Text="{Binding Path=[Settings_General], Source={x:Static managers:LocalizationManager.Instance}}"
+                                   Style="{StaticResource SubtitleLabel}"
+                                   FontSize="13"
+                                   VerticalOptions="Center"
+                                   Margin="8,0" />
+                        </Grid>
+                        <Border.GestureRecognizers>
+                            <TapGestureRecognizer Command="{Binding SwitchSectionCommand}"
+                                                  CommandParameter="General" />
+                        </Border.GestureRecognizers>
+                    </Border>
+
+                    <!-- Player -->
+                    <Border Style="{StaticResource NavItemStyle}">
+                        <Border.Triggers>
+                            <DataTrigger TargetType="Border"
+                                         Binding="{Binding ActiveSection}"
+                                         Value="Player">
+                                <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource LightSidebarItemActive}, Dark={StaticResource DarkSidebarItemActive}}">
+                                </Setter>
+                            </DataTrigger>
+                        </Border.Triggers>
+                        <Grid ColumnDefinitions="28,*">
+                            <Label Grid.Column="0"
+                                   Text="&#xe050;"
+                                   FontFamily="MaterialIcons-Regular"
+                                   FontSize="18"
+                                   VerticalOptions="Center"
+                                   TextColor="{AppThemeBinding Light={StaticResource LightPrimary}, Dark={StaticResource DarkPrimary}}">
+                            </Label>
+                            <Label Grid.Column="1"
+                                   Text="{Binding Path=[Settings_Player], Source={x:Static managers:LocalizationManager.Instance}}"
+                                   Style="{StaticResource SubtitleLabel}"
+                                   FontSize="13"
+                                   VerticalOptions="Center"
+                                   Margin="8,0"/>
+                        </Grid>
+                        <Border.GestureRecognizers>
+                            <TapGestureRecognizer Command="{Binding SwitchSectionCommand}"
+                                                  CommandParameter="Player" />
+                        </Border.GestureRecognizers>
+                    </Border>
+
+                    <!-- Cache -->
+                    <Border Style="{StaticResource NavItemStyle}">
+                        <Border.Triggers>
+                            <DataTrigger TargetType="Border"
+                                         Binding="{Binding ActiveSection}"
+                                         Value="Cache">
+                                <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource LightSidebarItemActive}, Dark={StaticResource DarkSidebarItemActive}}">
+                                </Setter>
+                            </DataTrigger>
+                        </Border.Triggers>
+                        <Grid ColumnDefinitions="28,*">
+                            <Label Grid.Column="0"
+                                   Text="&#xe86a;"
+                                   FontFamily="MaterialIcons-Regular"
+                                   FontSize="18"
+                                   VerticalOptions="Center"
+                                   TextColor="{AppThemeBinding Light={StaticResource LightPrimary}, Dark={StaticResource DarkPrimary}}">
+                            </Label>
+                            <Label Grid.Column="1"
+                                   Text="{Binding Path=[Settings_Cache], Source={x:Static managers:LocalizationManager.Instance}}"
+                                   Style="{StaticResource SubtitleLabel}"
+                                   FontSize="13"
+                                   VerticalOptions="Center"
+                                   Margin="8,0" />
+                        </Grid>
+                        <Border.GestureRecognizers>
+                            <TapGestureRecognizer Command="{Binding SwitchSectionCommand}"
+                                                  CommandParameter="Cache" />
+                        </Border.GestureRecognizers>
+                    </Border>
+
+                    <!-- Fetch -->
+                    <Border Style="{StaticResource NavItemStyle}">
+                        <Border.Triggers>
+                            <DataTrigger TargetType="Border"
+                                         Binding="{Binding ActiveSection}"
+                                         Value="Fetch">
+                                <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource LightSidebarItemActive}, Dark={StaticResource DarkSidebarItemActive}}" />
+                            </DataTrigger>
+                        </Border.Triggers>
+                        <Grid ColumnDefinitions="28,*">
+                            <Label Grid.Column="0"
+                                   Text="&#xe2bd;"
+                                   FontFamily="MaterialIcons-Regular"
+                                   FontSize="18"
+                                   VerticalOptions="Center"
+                                   TextColor="{AppThemeBinding Light={StaticResource LightPrimary}, Dark={StaticResource DarkPrimary}}">
+                            </Label>
+                            <Label Grid.Column="1"
+                                   Text="{Binding Path=[Settings_Fetch], Source={x:Static managers:LocalizationManager.Instance}}"
+                                   Style="{StaticResource SubtitleLabel}"
+                                   FontSize="13"
+                                   VerticalOptions="Center"
+                                   Margin="8,0" />
+                        </Grid>
+                        <Border.GestureRecognizers>
+                            <TapGestureRecognizer Command="{Binding SwitchSectionCommand}"
+                                                  CommandParameter="Fetch" />
+                        </Border.GestureRecognizers>
+                    </Border>
+
+                    <!-- About -->
+                    <Border Style="{StaticResource NavItemStyle}">
+                        <Border.Triggers>
+                            <DataTrigger TargetType="Border"
+                                         Binding="{Binding ActiveSection}"
+                                         Value="About">
+                                <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource LightSidebarItemActive}, Dark={StaticResource DarkSidebarItemActive}}" />
+                            </DataTrigger>
+                        </Border.Triggers>
+                        <Grid ColumnDefinitions="28,*">
+                            <Label Grid.Column="0"
+                                   Text="&#xe88e;"
+                                   FontFamily="MaterialIcons-Regular"
+                                   FontSize="18"
+                                   VerticalOptions="Center"
+                                   TextColor="{AppThemeBinding Light={StaticResource LightPrimary}, Dark={StaticResource DarkPrimary}}">
+                            </Label>
+                            <Label Grid.Column="1"
+                                   Text="{Binding Path=[Settings_About], Source={x:Static managers:LocalizationManager.Instance}}"
+                                   Style="{StaticResource SubtitleLabel}"
+                                   FontSize="13"
+                                   VerticalOptions="Center"
+                                   Margin="8,0" />
+                        </Grid>
+                        <Border.GestureRecognizers>
+                            <TapGestureRecognizer Command="{Binding SwitchSectionCommand}"
+                                                  CommandParameter="About" />
+                        </Border.GestureRecognizers>
+                    </Border>
+
+                </VerticalStackLayout>
+
+                <!-- Version footer -->
+                <Label Grid.Row="2"
+                       Text="{Binding AppVersion}"
+                       Style="{StaticResource CaptionLabel}"
+                       HorizontalOptions="Center" />
+
+            </Grid>
+        </Border>
+
+        <!-- ══════════════════════════════════════════
+             RIGHT CONTENT PANEL
+             ══════════════════════════════════════════ -->
+        <ScrollView Grid.Column="1"
+                    VerticalScrollBarVisibility="Never">
+            <VerticalStackLayout Padding="40,52,40,40"
+                                 Spacing="0">
+
+                <!-- ── GENERAL ─────────────────────────────── -->
+                <VerticalStackLayout IsVisible="{Binding ActiveSection,
+                                        Converter={converters:EnumToBoolConverter},
+                                        ConverterParameter='General'}"
+                                     Spacing="0">
+
+                    <Label Text="{Binding Path=[Settings_General], Source={x:Static managers:LocalizationManager.Instance}}"
+                           Style="{StaticResource TitleLabel}"
+                           Margin="0,0,0,28" />
+
+                    <!-- Language -->
+                    <Label Text="{Binding Path=[Settings_Language], Source={x:Static managers:LocalizationManager.Instance}}"
+                           Style="{StaticResource SectionHeaderLabel}"
+                           Margin="0,0,0,10" />
+
+                    <Border Style="{StaticResource SettingsRowStyle}">
+                        <Grid ColumnDefinitions="*,Auto">
+                            <VerticalStackLayout Grid.Column="0" Spacing="2">
+                                <Label  Text="{Binding Path=[Settings_Language], Source={x:Static managers:LocalizationManager.Instance}}"
+                                       Style="{StaticResource SubtitleLabel}"/>
+                                <Label Text="{Binding SelectedLanguage}"
+                                       Style="{StaticResource CaptionLabel}" />
+                            </VerticalStackLayout>
+                            <Picker Grid.Column="1"
+                                    ItemsSource="{Binding AvailableLanguages}"
+                                    SelectedItem="{Binding SelectedLanguage, Mode=TwoWay}"
+                                    WidthRequest="140"
+                                    TextColor="{AppThemeBinding Light={StaticResource LightPrimary},
+                                                                Dark={StaticResource DarkPrimary}}" />
+                        </Grid>
+                    </Border>
+
+                    <BoxView Style="{StaticResource Separator}" Margin="0,20" />
+
+                    <!-- Theme -->
+                    <Label Text="{Binding Path=[Settings_Appearance], Source={x:Static managers:LocalizationManager.Instance}}"
+                           Style="{StaticResource SectionHeaderLabel}"
+                           Margin="0,0,0,10" />
+
+                    <Border Style="{StaticResource SettingsRowStyle}">
+                        <Grid ColumnDefinitions="*,Auto">
+                            <VerticalStackLayout Grid.Column="0" Spacing="2">
+                                <Label Text="{Binding Path=[Settings_Theme], Source={x:Static managers:LocalizationManager.Instance}}"
+                                       Style="{StaticResource SubtitleLabel}" />
+                                <Label Text="{Binding ThemeModeText}"
+                                       Style="{StaticResource CaptionLabel}" />
+                            </VerticalStackLayout>
+                            <!-- Theme chips -->
+                            <HorizontalStackLayout Grid.Column="1" Spacing="8">
+                                <Border StrokeShape="RoundRectangle 10"
+                                        StrokeThickness="1"
+                                        Padding="12,6"
+                                        Stroke="{AppThemeBinding Light={StaticResource LightDivider}, Dark={StaticResource DarkDivider}}">
+                                    <Border.Triggers>
+                                        <DataTrigger TargetType="Border"
+                                                     Binding="{Binding CurrentTheme}"
+                                                     Value="Light">
+                                            <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource LightPrimary}, Dark={StaticResource DarkPrimary}}">
+                                            </Setter>
+                                        </DataTrigger>
+                                    </Border.Triggers>
+                                    <Label Text="&#xe518;"
+                                           FontFamily="MaterialIcons-Regular"
+                                           FontSize="16"
+                                           VerticalOptions="Center"
+                                           TextColor="{AppThemeBinding Light={StaticResource LightTextPrimary}, Dark={StaticResource DarkTextPrimary}}">
+                                    </Label>
+                                    <Border.GestureRecognizers>
+                                        <TapGestureRecognizer Command="{Binding SetThemeCommand}"
+                                                              CommandParameter="Light" />
+                                    </Border.GestureRecognizers>
+                                </Border>
+
+                                <Border StrokeShape="RoundRectangle 10"
+                                        StrokeThickness="1"
+                                        Padding="12,6"
+                                        Stroke="{AppThemeBinding Light={StaticResource LightDivider}, Dark={StaticResource DarkDivider}}">
+                                    <Border.Triggers>
+                                        <DataTrigger TargetType="Border"
+                                                     Binding="{Binding CurrentTheme}"
+                                                     Value="Dark">
+                                            <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource LightPrimary}, Dark={StaticResource DarkPrimary}}">
+                                            </Setter>
+                                        </DataTrigger>
+                                    </Border.Triggers>
+                                    <Label Text="&#xe51c;"
+                                           FontFamily="MaterialIcons-Regular"
+                                           FontSize="16"
+                                           VerticalOptions="Center"
+                                           TextColor="{AppThemeBinding Light={StaticResource LightTextPrimary}, Dark={StaticResource DarkTextPrimary}}">
+                                    </Label>
+                                    <Border.GestureRecognizers>
+                                        <TapGestureRecognizer Command="{Binding SetThemeCommand}"
+                                                              CommandParameter="Dark" />
+                                    </Border.GestureRecognizers>
+                                </Border>
+
+                                <Border StrokeShape="RoundRectangle 10"
+                                        StrokeThickness="1"
+                                        Padding="12,6"
+                                        Stroke="{AppThemeBinding Light={StaticResource LightDivider}, Dark={StaticResource DarkDivider}}">
+                                    <Border.Triggers>
+                                        <DataTrigger TargetType="Border"
+                                                     Binding="{Binding CurrentTheme}"
+                                                     Value="System">
+                                            <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource LightPrimary}, Dark={StaticResource DarkPrimary}}">
+                                            </Setter>
+                                        </DataTrigger>
+                                    </Border.Triggers>
+                                    <Label Text="&#xe1c8;"
+                                           FontFamily="MaterialIcons-Regular"
+                                           FontSize="16"
+                                           VerticalOptions="Center"
+                                           TextColor="{AppThemeBinding Light={StaticResource LightTextPrimary}, Dark={StaticResource DarkTextPrimary}}">
+                                    </Label>
+                                    <Border.GestureRecognizers>
+                                        <TapGestureRecognizer Command="{Binding SetThemeCommand}"
+                                                              CommandParameter="System" />
+                                    </Border.GestureRecognizers>
+                                </Border>
+                            </HorizontalStackLayout>
+                        </Grid>
+                    </Border>
+
+                </VerticalStackLayout>
+
+                <!-- ── PLAYER ──────────────────────────────── -->
+                <VerticalStackLayout IsVisible="{Binding ActiveSection,
+                                        Converter={converters:EnumToBoolConverter},
+                                        ConverterParameter='Player'}"
+                                     Spacing="0">
+
+                    <Label Text="{Binding Path=[Settings_Player], Source={x:Static managers:LocalizationManager.Instance}}"
+                           Style="{StaticResource TitleLabel}"
+                           Margin="0,0,0,28" />
+
+                    <Label Text="{Binding Path=[Settings_Audio], Source={x:Static managers:LocalizationManager.Instance}}"
+                           Style="{StaticResource SectionHeaderLabel}"
+                           Margin="0,0,0,10" />
+
+                    <!-- Default volume -->
+                    <Border Style="{StaticResource SettingsRowStyle}">
+                        <VerticalStackLayout Spacing="12">
+                            <Grid ColumnDefinitions="*,Auto">
+                                <Label Grid.Column="0"
+                                       Text="{Binding Path=[Settings_DefaultVolume], Source={x:Static managers:LocalizationManager.Instance}}"
+                                       Style="{StaticResource SubtitleLabel}"
+                                       VerticalOptions="Center" />
+                                <Label Grid.Column="1"
+                                       Text="{Binding Volume, StringFormat='{0:F0}%'}"
+                                       Style="{StaticResource CaptionLabel}"
+                                       VerticalOptions="Center" />
+                            </Grid>
+                            <Slider Value="{Binding Volume}"
+                                    Minimum="0"
+                                    Maximum="100" />
+                        </VerticalStackLayout>
+                    </Border>
+
+                    <BoxView Style="{StaticResource Separator}" Margin="0,20" />
+
+                    <!-- Quality -->
+                    <Label Text="{Binding Path=[Settings_Quality], Source={x:Static managers:LocalizationManager.Instance}}"
+                           Style="{StaticResource SectionHeaderLabel}"
+                           Margin="0,0,0,10" />
+
+                    <Border Style="{StaticResource SettingsRowStyle}">
+                        <Grid ColumnDefinitions="*,Auto">
+                            <VerticalStackLayout Grid.Column="0" Spacing="2">
+                                <Label Text="{Binding Path=[Settings_AudioQuality], Source={x:Static managers:LocalizationManager.Instance}}"
+                                       Style="{StaticResource SubtitleLabel}" />
+                                <Label Text="{Binding Path=[Settings_AudioQualityDesc], Source={x:Static managers:LocalizationManager.Instance}}"
+                                       Style="{StaticResource CaptionLabel}" />
+                            </VerticalStackLayout>
+                            <Picker Grid.Column="1"
+                                    ItemsSource="{Binding AvailableQualities}"
+                                    SelectedItem="{Binding SelectedQuality , Mode=TwoWay}"
+                                    WidthRequest="140"
+                                    TextColor="{AppThemeBinding Light={StaticResource LightPrimary},
+                                                                Dark={StaticResource DarkPrimary}}" />
+                        </Grid>
+                    </Border>
+
+                    <BoxView Style="{StaticResource Separator}" Margin="0,20" />
+
+                    <!-- Loudness normalization -->
+                    <Label Text="{Binding Path=[Settings_Processing], Source={x:Static managers:LocalizationManager.Instance}}"
+                           Style="{StaticResource SectionHeaderLabel}"
+                           Margin="0,0,0,10" />
+
+                    <Border Style="{StaticResource SettingsRowStyle}">
+                        <Grid ColumnDefinitions="*,Auto">
+                            <VerticalStackLayout Grid.Column="0" Spacing="2">
+                                <Label Text="{Binding Path=[Settings_LoudnessNorm], Source={x:Static managers:LocalizationManager.Instance}}"
+                                       Style="{StaticResource SubtitleLabel}" />
+                                <Label Text="{Binding Path=[Settings_LoudnessNormDesc], Source={x:Static managers:LocalizationManager.Instance}}"
+                                       Style="{StaticResource CaptionLabel}" />
+                            </VerticalStackLayout>
+                            <Switch Grid.Column="1"
+                                    IsToggled="{Binding LoudnessNormEnabled}"
+                                    OnColor="{AppThemeBinding Light={StaticResource LightPrimary},
+                                                              Dark={StaticResource DarkPrimary}}" />
+                        </Grid>
+                    </Border>
+
+                </VerticalStackLayout>
+
+                <!-- ── CACHE ───────────────────────────────── -->
+                <VerticalStackLayout IsVisible="{Binding ActiveSection,
+                                        Converter={converters:EnumToBoolConverter},
+                                        ConverterParameter='Cache'}"
+                                     Spacing="0">
+
+                    <Label Text="{Binding Path=[Settings_Cache], Source={x:Static managers:LocalizationManager.Instance}}"
+                           Style="{StaticResource TitleLabel}"
+                           Margin="0,0,0,28" />
+
+                    <Label Text="{Binding Path=[Settings_Storage], Source={x:Static managers:LocalizationManager.Instance}}"
+                           Style="{StaticResource SectionHeaderLabel}"
+                           Margin="0,0,0,10" />
+
+                    <!-- Cache size -->
+                    <Border Style="{StaticResource SettingsRowStyle}">
+                        <VerticalStackLayout Spacing="12">
+                            <Grid ColumnDefinitions="*,Auto">
+                                <Label Grid.Column="0"
+                                       Text="{Binding Path=[Settings_MaxCacheSize], Source={x:Static managers:LocalizationManager.Instance}}"
+                                       Style="{StaticResource SubtitleLabel}"
+                                       VerticalOptions="Center" />
+                                <Label Grid.Column="1"
+                                       Text="{Binding MaxCacheSizeMb, StringFormat='{0} MB'}"
+                                       Style="{StaticResource CaptionLabel}"
+                                       VerticalOptions="Center" />
+                            </Grid>
+                            <Slider Value="{Binding MaxCacheSizeMb}"
+                                    Minimum="-1"
+                                    Maximum="10000" />
+                        </VerticalStackLayout>
+                    </Border>
+
+                    <!-- Current usage -->
+                    <Border Style="{StaticResource SettingsRowStyle}"
+                            Margin="0,8,0,0">
+                        <Grid ColumnDefinitions="*,Auto">
+                            <VerticalStackLayout Grid.Column="0" Spacing="2">
+                                <Label Text="{Binding Path=[Settings_CurrentUsage],
+                                       Source={x:Static managers:LocalizationManager.Instance}}"
+                                       Style="{StaticResource SubtitleLabel}" />
+                                <Label Text="{Binding CacheUsageText}"
+                                       Style="{StaticResource CaptionLabel}" />
+                            </VerticalStackLayout>
+                            <!-- Usage bar -->
+                            <ProgressBar Grid.Column="1"
+                                         Progress="{Binding CacheUsageRatio}"
+                                         WidthRequest="120"
+                                         VerticalOptions="Center"
+                                         ProgressColor="{AppThemeBinding Light={StaticResource LightPrimary},
+                                                                         Dark={StaticResource DarkPrimary}}" />
+                        </Grid>
+                    </Border>
+
+                    <BoxView Style="{StaticResource Separator}" Margin="0,20" />
+
+                    <Label Text="{Binding Path=[Settings_Management], Source={x:Static managers:LocalizationManager.Instance}}"
+                           Style="{StaticResource SectionHeaderLabel}"
+                           Margin="0,0,0,10" />
+
+                    <!-- Clear audio cache -->
+                    <Border Style="{StaticResource SettingsRowStyle}">
+                        <Grid ColumnDefinitions="*,Auto">
+                            <VerticalStackLayout Grid.Column="0" Spacing="2">
+                                <Label Text="{Binding Path=[Settings_ClearAudioCache], Source={x:Static managers:LocalizationManager.Instance}}"
+                                       Style="{StaticResource SubtitleLabel}" />
+                                <Label Text="{Binding Path=[Settings_ClearAudioCacheDesc], Source={x:Static managers:LocalizationManager.Instance}}"
+                                       Style="{StaticResource CaptionLabel}" />
+                            </VerticalStackLayout>
+                            <Button Grid.Column="1"
+                                    Text="{Binding Path=[Settings_Clear], Source={x:Static managers:LocalizationManager.Instance}}"
+                                    Command="{Binding ClearAudioCacheCommand}"
+                                    CornerRadius="10"
+                                    HeightRequest="36"
+                                    FontSize="13"
+                                    BackgroundColor="{AppThemeBinding Light={StaticResource LightIconButton},
+                                                                      Dark={StaticResource DarkIconButton}}"
+                                    TextColor="{AppThemeBinding Light={StaticResource LightPrimary},
+                                                                Dark={StaticResource DarkPrimary}}" />
+                        </Grid>
+                    </Border>
+
+                    <!-- Clear metadata cache -->
+                    <Border Style="{StaticResource SettingsRowStyle}"
+                            Margin="0,8,0,0">
+                        <Grid ColumnDefinitions="*,Auto">
+                            <VerticalStackLayout Grid.Column="0" Spacing="2">
+                                <Label Text="{Binding Path=[Settings_ClearMetaCache], Source={x:Static managers:LocalizationManager.Instance}}"
+                                       Style="{StaticResource SubtitleLabel}" />
+                                <Label Text="{Binding Path=[Settings_ClearMetaCacheDesc], Source={x:Static managers:LocalizationManager.Instance}}"
+                                       Style="{StaticResource CaptionLabel}" />
+                            </VerticalStackLayout>
+                            <Button Grid.Column="1"
+                                    Text="{Binding Path=[Settings_Clear], Source={x:Static managers:LocalizationManager.Instance}}"
+                                    Command="{Binding ClearMetaCacheCommand}"
+                                    CornerRadius="10"
+                                    HeightRequest="36"
+                                    FontSize="13"
+                                    BackgroundColor="{AppThemeBinding Light={StaticResource LightIconButton},
+                                                                      Dark={StaticResource DarkIconButton}}"
+                                    TextColor="{AppThemeBinding Light={StaticResource LightPrimary},
+                                                                Dark={StaticResource DarkPrimary}}" />
+                        </Grid>
+                    </Border>
+
+                    <!-- Open cache directory -->
+                    <Border Style="{StaticResource SettingsRowStyle}"
+                            Margin="0,8,0,0"
+                            IsVisible="{OnPlatform Default=False, WinUI=True}" >
+                        <Grid ColumnDefinitions="*,Auto">
+                            
+                            <VerticalStackLayout Grid.Column="0" Spacing="2">
+                                <Label Text="{Binding Path=[Settings_OpenCacheDir], Source={x:Static managers:LocalizationManager.Instance}}"
+                                       Style="{StaticResource SubtitleLabel}" />
+                                <Label Text="{Binding Source={x:Static helper:AppPaths.BaseDir}}"
+                                       Style="{StaticResource CaptionLabel}" />
+                            </VerticalStackLayout>
+                            
+                            <Button Grid.Column="1"
+                                    Text="{Binding Path=[Settings_Open], Source={x:Static managers:LocalizationManager.Instance}}"
+                                    Command="{Binding OpenCacheDirCommand}"
+                                    CornerRadius="10"
+                                    HeightRequest="36"
+                                    FontSize="13"
+                                    BackgroundColor="{AppThemeBinding Light={StaticResource LightIconButton},
+                                                                      Dark={StaticResource DarkIconButton}}"
+                                    TextColor="{AppThemeBinding Light={StaticResource LightPrimary},
+                                                                Dark={StaticResource DarkPrimary}}" />
+                        </Grid>
+                    </Border>
+
+                </VerticalStackLayout>
+
+                <!-- ── FETCH ───────────────────────────────── -->
+                <VerticalStackLayout IsVisible="{Binding ActiveSection,
+                                        Converter={converters:EnumToBoolConverter},
+                                        ConverterParameter='Fetch'}"
+                                     Spacing="0">
+
+                    <Label Text="{Binding Path=[Settings_Fetch], Source={x:Static managers:LocalizationManager.Instance}}"
+                           Style="{StaticResource TitleLabel}"
+                           Margin="0,0,0,28" />
+
+                    <Label Text="{Binding Path=[Settings_Network], Source={x:Static managers:LocalizationManager.Instance}}"
+                           Style="{StaticResource SectionHeaderLabel}"
+                           Margin="0,0,0,10" />
+
+                    <!-- Max concurrent fetches -->
+                    <Border Style="{StaticResource SettingsRowStyle}">
+                        <Grid ColumnDefinitions="*,Auto">
+                            <VerticalStackLayout Grid.Column="0" Spacing="2">
+                                <Label Text="{Binding Path=[Settings_MaxConcurrent], Source={x:Static managers:LocalizationManager.Instance}}"
+                                       Style="{StaticResource SubtitleLabel}" />
+                                <Label Text="{Binding Path=[Settings_MaxConcurrentDesc], Source={x:Static managers:LocalizationManager.Instance}}"
+                                       Style="{StaticResource CaptionLabel}" />
+                            </VerticalStackLayout>
+                            <!-- Stepper -->
+                            <HorizontalStackLayout Grid.Column="1"
+                                                   Spacing="12"
+                                                   VerticalOptions="Center">
+                                <Button Text="&#xe15b;"
+                                        FontFamily="MaterialIcons-Regular"
+                                        Command="{Binding DecrementConcurrentCommand}"
+                                        Style="{StaticResource ActionButtonStyle}"
+                                        FontSize="18" />
+                                <Label Text="{Binding MaxConcurrentFetches}"
+                                       Style="{StaticResource SubtitleLabel}"
+                                       MinimumWidthRequest="24"
+                                       HorizontalOptions="Center"
+                                       HorizontalTextAlignment="Center"
+                                       VerticalOptions="Center" />
+                                <Button Text="&#xe145;"
+                                        FontFamily="MaterialIcons-Regular"
+                                        Command="{Binding IncrementConcurrentCommand}"
+                                        Style="{StaticResource ActionButtonStyle}"
+                                        FontSize="18" />
+                            </HorizontalStackLayout>
+                        </Grid>
+                    </Border>
+
+                    <!-- Fetch page size -->
+                    <Border Style="{StaticResource SettingsRowStyle}"
+                            Margin="0,8,0,0">
+                        <Grid ColumnDefinitions="*,Auto">
+                            <VerticalStackLayout Grid.Column="0" Spacing="2">
+                                <Label Text="{Binding Path=[Settings_FetchPageSize], Source={x:Static managers:LocalizationManager.Instance}}"
+                                       Style="{StaticResource SubtitleLabel}" />
+                                <Label Text="{Binding Path=[Settings_FetchPageSizeDesc], Source={x:Static managers:LocalizationManager.Instance}}"
+                                       Style="{StaticResource CaptionLabel}" />
+                            </VerticalStackLayout>
+                            <!-- Stepper -->
+                            <HorizontalStackLayout Grid.Column="1"
+                                                   Spacing="12"
+                                                   VerticalOptions="Center">
+                                <Button Text="&#xe15b;"
+                                        FontFamily="MaterialIcons-Regular"
+                                        Command="{Binding DecrementPageSizeCommand}"
+                                        Style="{StaticResource ActionButtonStyle}"
+                                        FontSize="18" />
+                                <Label Text="{Binding FetchPageSize}"
+                                       Style="{StaticResource SubtitleLabel}"
+                                       MinimumWidthRequest="24"
+                                       HorizontalOptions="Center"
+                                       HorizontalTextAlignment="Center"
+                                       VerticalOptions="Center" />
+                                <Button Text="&#xe145;"
+                                        FontFamily="MaterialIcons-Regular"
+                                        Command="{Binding IncrementPageSizeCommand}"
+                                        Style="{StaticResource ActionButtonStyle}"
+                                        FontSize="18" />
+                            </HorizontalStackLayout>
+                        </Grid>
+                    </Border>
+
+                    <!-- Max retry -->
+                    <Border Style="{StaticResource SettingsRowStyle}"
+                            Margin="0,8,0,0">
+                        <Grid ColumnDefinitions="*,Auto">
+                            <VerticalStackLayout Grid.Column="0" Spacing="2">
+                                <Label Text="{Binding Path=[Settings_MaxRetry], Source={x:Static managers:LocalizationManager.Instance}}"
+                                       Style="{StaticResource SubtitleLabel}" />
+                                <Label Text="{Binding Path=[Settings_MaxRetryDesc], Source={x:Static managers:LocalizationManager.Instance}}"
+                                       Style="{StaticResource CaptionLabel}" />
+                            </VerticalStackLayout>
+                            <HorizontalStackLayout Grid.Column="1"
+                                                   Spacing="12"
+                                                   VerticalOptions="Center">
+                                <Button Text="&#xe15b;"
+                                        FontFamily="MaterialIcons-Regular"
+                                        Command="{Binding DecrementRetryCommand}"
+                                        Style="{StaticResource ActionButtonStyle}"
+                                        FontSize="18" />
+                                <Label Text="{Binding MaxRetryAttempts}"
+                                       Style="{StaticResource SubtitleLabel}"
+                                       MinimumWidthRequest="24"
+                                       HorizontalOptions="Center"
+                                       HorizontalTextAlignment="Center"
+                                       VerticalOptions="Center" />
+                                <Button Text="&#xe145;"
+                                        FontFamily="MaterialIcons-Regular"
+                                        Command="{Binding IncrementRetryCommand}"
+                                        Style="{StaticResource ActionButtonStyle}"
+                                        FontSize="18" />
+                            </HorizontalStackLayout>
+                        </Grid>
+                    </Border>
+
+                </VerticalStackLayout>
+
+                <!-- ── ABOUT ───────────────────────────────── -->
+                <VerticalStackLayout IsVisible="{Binding ActiveSection,
+                                        Converter={converters:EnumToBoolConverter},
+                                        ConverterParameter='About'}"
+                                     Spacing="0">
+
+                    <Label Text="{Binding Path=[Settings_About], Source={x:Static managers:LocalizationManager.Instance}}"
+                           Style="{StaticResource TitleLabel}"
+                           Margin="0,0,0,28" />
+
+                    <!-- App info card -->
+                    <Border Style="{StaticResource GlassCard}"
+                            Padding="24"
+                            Margin="0,0,0,16">
+                        <VerticalStackLayout Spacing="8"
+                                             HorizontalOptions="Center">
+                            <!-- App icon placeholder -->
+                            <Label Text="&#xe030;"
+                                   FontFamily="MaterialIcons-Regular"
+                                   FontSize="48"
+                                   HorizontalOptions="Center"
+                                   TextColor="{AppThemeBinding Light={StaticResource LightPrimary}, Dark={StaticResource DarkPrimary}}">
+                            </Label>
+                            <Label Text="MauiMixTube"
+                                   Style="{StaticResource TitleLabel}"
+                                   HorizontalOptions="Center" />
+                            <Label Text="{Binding AppVersion}"
+                                   Style="{StaticResource CaptionLabel}"
+                                   HorizontalOptions="Center" />
+                        </VerticalStackLayout>
+                    </Border>
+
+                    <!-- Links -->
+                    <Border Style="{StaticResource SettingsRowStyle}">
+                        <Grid ColumnDefinitions="*,Auto">
+                            <Label Grid.Column="0"
+                                   Text="{Binding Path=[Settings_SourceCode], Source={x:Static managers:LocalizationManager.Instance}}"
+                                   Style="{StaticResource SubtitleLabel}"
+                                   VerticalOptions="Center" />
+                            <Label Grid.Column="1"
+                                   Text="&#xe89e;"
+                                   FontFamily="MaterialIcons-Regular"
+                                   FontSize="18"
+                                   VerticalOptions="Center"
+                                   TextColor="{AppThemeBinding Light={StaticResource LightPrimary}, Dark={StaticResource DarkPrimary}}">
+                            </Label>
+                        </Grid>
+                        <Border.GestureRecognizers>
+                            <TapGestureRecognizer Command="{Binding OpenSourceCodeCommand}" />
+                        </Border.GestureRecognizers>
+                    </Border>
+
+                    <Border Style="{StaticResource SettingsRowStyle}"
+                            Margin="0,8,0,0">
+                        <Grid ColumnDefinitions="*,Auto">
+                            <Label Grid.Column="0"
+                                   Text="{Binding Path=[Settings_Licenses], Source={x:Static managers:LocalizationManager.Instance}}"
+                                   Style="{StaticResource SubtitleLabel}"
+                                   VerticalOptions="Center" />
+                            <Label Grid.Column="1"
+                                   Text="&#xe89e;"
+                                   FontFamily="MaterialIcons-Regular"
+                                   FontSize="18"
+                                   VerticalOptions="Center"
+                                   TextColor="{AppThemeBinding Light={StaticResource LightPrimary}, Dark={StaticResource DarkPrimary}}">
+                            </Label>
+                        </Grid>
+                        <Border.GestureRecognizers>
+                            <TapGestureRecognizer Command="{Binding OpenLicensesCommand}" />
+                        </Border.GestureRecognizers>
+                    </Border>
+
+                </VerticalStackLayout>
+
+            </VerticalStackLayout>
+        </ScrollView>
+
+    </Grid>
+
+</ContentPage>

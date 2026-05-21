@@ -1,0 +1,69 @@
+{
+    "Sidebar_Playlist" : "playlist",
+    "Sidebar_Playlists" : "playlists",
+    "Sidebar_Library" : "LIBRARY",
+    "Sidebar_Search_PlaceHolder":"Filter playlists…",
+    "Sidebar_Quick_Access":"QUICK ACCESS",
+    "Sidebar_Liked_Songs":"Liked Songs",
+    "Sidebar_Recently_Played":"Recently Played",
+    "Settings":"Settings",
+    "Playlist":"Playlist",
+    "Playlists":"Playlists",
+
+    "Album_Button":"ALBUM",
+    "Lyrics_Button":"LYRICS",
+
+    "Playing_From" : "PLAYING FROM" ,
+    "Nothing_Is_Playing":"NOTHING IS PLAYING",
+    "Lyrics_PlaceHolder":"Lyrics will appear here…",
+
+    "Topbar_Search_PlaceHolder":"Search songs, artists, albums…",
+
+    "Settings_Title" : "Preferences",
+    "Settings_General" : "GENERAL",
+    "Settings_Player" : "PLAYER",
+    "Settings_Cache" : "CACHE",
+    "Settings_Fetch" : "FETCH",
+    "Settings_About" : "ABOUT",
+
+    "Settings_Language" : "Language",
+    "Settings_Appearance" : "Appearance",
+    "Settings_Theme" : "Theme",
+
+    "Settings_Audio" : "Audio",
+    "Settings_DefaultVolume" : "Default Volume",
+
+    "Settings_Quality" : "Quality",
+    "Settings_AudioQuality" : "Audio Quality",
+    "Settings_AudioQualityDesc" : "Determines the audio bitrate used when fetching media sources.",
+
+    "Settings_Processing" : "Processing",
+    "Settings_LoudnessNorm" : "Loudness Normalization",
+    "Settings_LoudnessNormDesc" : "Enables loudness balancing to optimize and standardize volume output across all audio sources.",
+
+    "Settings_Storage" : "Storage",
+    "Settings_MaxCacheSize" : "Max Cache Size (-1 to disable)",
+    "Settings_CurrentUsage" : "Current Usage (MB)",
+
+    "Settings_Management" : "Management",
+    "Settings_ClearAudioCache" : "Clear Audio Cache",
+    "Settings_ClearAudioCacheDesc" : "Audio cache bypasses streaming latency to speed up music loading.",
+    "Settings_ClearMetaCache" : "Clear Metadata Cache",
+    "Settings_ClearMetaCacheDesc" : "Metadata is used to speed up album previews and reduce image loading latency, while improving streaming responsiveness before media URLs expire.",
+
+    "Settings_OpenCacheDir" : "Open Cache Directory",
+    "Settings_Clear" : "Clear",
+    "Settings_Open" : "Open",
+
+    "Settings_Network" : "Network",
+    "Settings_MaxConcurrent" : "Max Concurrent Fetches",
+    "Settings_MaxConcurrentDesc" : "Controls how many threads process fetching services simultaneously. Higher numbers increase parallel speed but place more strain on hardware.",
+    
+    "Settings_MaxRetry" : "Max Retry",
+    "Settings_MaxRetryDesc" : "The maximum number of attempts for a single fetch service. It will be abandoned if exceeded.",
+    "Settings_FetchPageSize": "Preview Fetch Limit",
+    "Settings_FetchPageSizeDesc": "The maximum number of metadata items to fetch forward when triggering an album preview.",
+    "Settings_SourceCode" : "Source code",
+    "Settings_Licenses" : "Licenses"
+
+}

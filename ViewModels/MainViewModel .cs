@@ -1,0 +1,366 @@
+﻿using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
+using CommunityToolkit.Mvvm.Messaging;
+using MauiMixTube.Extensions;
+using MauiMixTube.Helper;
+using MauiMixTube.Managers;
+using MauiMixTube.Messages;
+using MauiMixTube.Models;
+using MauiMixTube.Models.Playlist;
+using System.Collections.ObjectModel;
+
+namespace MauiMixTube.ViewModels
+{
+    public partial class MainViewModel : ObservableObject
+    {
+        private readonly PlaylistManager _playlistManager;
+        private readonly SettingsManager _settingsManager;
+        private readonly PlaylistRepository _playlistRepository;
+
+        private readonly PeriodicTimer _progressTimer = new(TimeSpan.FromMilliseconds(500));
+
+        private CancellationTokenSource _loadCts = new();
+        private CancellationTokenSource _fetchCts = new();
+
+        public bool IsSliderDragging { get; set; } = false;
+
+        [ObservableProperty] public partial string PlayingFrom { get; set; } = string.Empty;
+        [ObservableProperty] public partial string SongTitle { get; set; } = string.Empty;
+        [ObservableProperty] public partial string Artist { get; set; } = string.Empty;
+        [ObservableProperty] public partial double Progress { get; set; }
+        [ObservableProperty] public partial string CurrentTime { get; set; } = "0:00";
+        [ObservableProperty] public partial string TotalTime { get; set; } = "0:00";
+
+        [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(PlayPauseIcon))]
+        public partial bool IsPlaying { get; set; }
+        public string PlayPauseIcon => IsPlaying ? IconFont.Pause : IconFont.Play;
+
+        [ObservableProperty] public partial bool ShuffleOn { get; set; }
+
+        [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(RepeatIcon))]
+        [NotifyPropertyChangedFor(nameof(IsRepeatActive))]
+        public partial RepeatMode RepeatMode { get; set; }
+        public string RepeatIcon => RepeatMode == RepeatMode.RepeatOne ? IconFont.RepeatOne : IconFont.Repeat;
+        public bool IsRepeatActive => RepeatMode != RepeatMode.PlayOnce;
+
+        [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(LikeIcon))]
+        public partial bool IsLiked { get; set; }
+        public string LikeIcon => IsLiked ? IconFont.Favorite : IconFont.FavoriteBorder;
+
+        [ObservableProperty] public partial string? AlbumArtUrl { get; set; }
+        [ObservableProperty] public partial ObservableCollection<UserPlaylist> Playlists { get; set; } = new();
+        [ObservableProperty] public partial UserPlaylist? SelectedPlaylist { get; set; }
+        [ObservableProperty] public partial bool IsBusy { get; set; }
+        [ObservableProperty] public partial ObservableCollection<TrackDisplayItem> AlbumTracks { get; set; } = new();
+
+        [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(IsAlbumTabOpening))]
+        [NotifyPropertyChangedFor(nameof(IsLyricsTabOpening))]
+        public partial BottomPanelTab ActiveTab { get; set; } = BottomPanelTab.None;
+
+        [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(IsAlbumTabOpening))]
+        [NotifyPropertyChangedFor(nameof(IsLyricsTabOpening))]
+        public partial bool IsBottomExpanderExpanded { get; set; }
+
+        public bool IsFetchingTracks;
+
+        public bool IsAlbumTabOpening => ActiveTab == BottomPanelTab.Album && IsBottomExpanderExpanded;
+        public bool IsLyricsTabOpening => ActiveTab == BottomPanelTab.Lyrics && IsBottomExpanderExpanded;
+
+        partial void OnActiveTabChanged(BottomPanelTab value) => OnOpeningStatusChanged();
+        partial void OnIsBottomExpanderExpandedChanged(bool value) => OnOpeningStatusChanged();
+
+        public double Volume
+        {
+            get => _settingsManager.Volume;
+            set
+            {
+                _settingsManager.Volume = value;
+            }
+        }
+
+        public MainViewModel(SettingsManager settingsManager, PlaylistManager playlistManager, PlaylistRepository playlistRepository)
+        {
+            _settingsManager = settingsManager;
+            _playlistManager = playlistManager;
+            _playlistRepository = playlistRepository;
+            Application.Current.UserAppTheme = _settingsManager.Current.General.Theme.ToAppTheme();
+            _ = StartProgressLoopAsync();
+            _ = LoadPlayListAsync();
+
+            _playlistManager.TrackChanged += info =>
+            {
+                MainThread.BeginInvokeOnMainThread(() =>
+                {
+                    SongTitle = info.Title;
+                    Artist = info.Artist;
+                    AlbumArtUrl = info.ThumbnailUrl;
+                    TotalTime = FormatTime(info.Duration);
+                    Progress = 0;
+
+                    if(info.IsCurrent && AlbumTracks.Count > info.OrderNum)
+                    {
+                        for(int i=0;i<AlbumTracks.Count;i++)
+                            AlbumTracks[i].IsCurrent = i == info.OrderNum;
+                    }
+                });
+            };
+
+            _playlistManager.QueueReset += () =>
+            {
+                MainThread.BeginInvokeOnMainThread(async () =>
+                {
+                    _loadCts.TryReset();
+                    _fetchCts.TryReset();
+                    await ResetAlbumTracksAndTryLoadAsync();
+                });
+            };
+        }
+
+        private async Task LoadPlayListAsync()
+        {
+            var playlists =  _playlistRepository.GetAll();
+            Playlists = new ObservableCollection<UserPlaylist>(playlists);
+        }
+
+        private async Task ResetAlbumTracksAndTryLoadAsync()
+        {
+            AlbumTracks.Clear();
+            if (IsAlbumTabOpening)
+                await FetchNextPageAsync();
+        }
+
+
+        private async Task StartProgressLoopAsync(CancellationToken ct = default)
+        {
+            while (await _progressTimer.WaitForNextTickAsync(ct))
+            {
+                if(!IsSliderDragging)
+                {
+                    var ratio = _playlistManager.TotalDuration.TotalSeconds != 0 ? 
+                        _playlistManager.CurrentPosition.TotalSeconds / _playlistManager.TotalDuration.TotalSeconds : 
+                        0;
+                    Progress = Math.Clamp(ratio, 0, 1);
+                }
+
+                CurrentTime = FormatTime(_playlistManager.CurrentPosition);
+            }
+        }
+
+        private void OnOpeningStatusChanged()
+        {
+            OpeningStatusChangedCommand.Execute(null);
+        }
+
+        partial void OnSelectedPlaylistChanged(UserPlaylist? value)
+        {
+            if (value == null) return;
+
+            SelectPlaylistCommand.Execute(value);
+        }
+
+        [RelayCommand]
+        private async Task OpeningStatusChangedAsync()
+        {
+            if(IsAlbumTabOpening)
+            {
+                if (AlbumTracks.Count < 1)
+                    await FetchNextPageAsync();
+            }
+        }
+
+        [RelayCommand]
+        private void SwitchTab(string tab)
+            => ActiveTab = Enum.Parse<BottomPanelTab>(tab);
+
+        [RelayCommand]
+        private async Task PlayPauseAsync()
+        {
+            IsPlaying = await _playlistManager.TogglePlayPauseAsync();
+        }
+
+        [RelayCommand]
+        private async Task ShuffleAsync()
+        {
+            ShuffleOn = _playlistManager.ToggleShuffle();
+        }
+
+        [RelayCommand]
+        private async Task RepeatAsync()
+        {
+            RepeatMode = _playlistManager.ToggleRepeat();
+        }
+
+        [RelayCommand]
+        private async Task LikeAsync()
+        {
+            IsLiked = !IsLiked;
+        }
+
+
+        [RelayCommand]
+        private async Task SelectPlaylistAsync(UserPlaylist playlist)
+        {
+            try
+            {
+                IsBusy = true;
+                PlayingFrom = playlist.Name;
+                await _playlistManager.LoadAsync(playlist, _loadCts.Token);
+
+                foreach (var p in Playlists)
+                    p.IsActive = p.Id == playlist.Id;
+
+                SelectedPlaylist = playlist;
+                WeakReferenceMessenger.Default.Send(new CloseSidebarMessage());
+            }
+            catch (Exception ex)
+            {
+                WeakReferenceMessenger.Default.Send(new ToastMessage($"Failed to load playlist : {ex.Message}"));
+            }
+            finally
+            {
+                IsBusy = false;
+            }
+        }
+
+        [RelayCommand]
+        private async Task FetchNextPageAsync()
+        {
+            if (!IsFetchingTracks)
+            {
+                try
+                {
+                    IsFetchingTracks = true;
+                    await foreach (var info in _playlistManager.FetchNextPageAsync(_fetchCts.Token))
+                    {
+                        AlbumTracks.Add(info);
+                    }
+                }
+                finally
+                {
+                    IsFetchingTracks = false;
+                }
+            }
+        }
+
+        [RelayCommand]
+        private async Task NextAsync() => _playlistManager.Skip();
+
+        [RelayCommand]
+        private async Task PreviousAsync() => _playlistManager.Previous();
+
+        [RelayCommand]
+        private async Task PlayTrackAsync(TrackDisplayItem track)
+        {
+            await _playlistManager.JumpToIndexAsync(track.OrderNum-1 , new CancellationToken());
+        }
+
+
+        public async Task LoadPlaylistsAsync()
+        {
+            _ = ResolveThumbnailsAsync(Playlists);
+        }
+
+        private async Task ResolveThumbnailsAsync(
+            IEnumerable<UserPlaylist> playlists)
+        {
+            foreach (var playlist in playlists.Where(p => string.IsNullOrEmpty(p.ThumbnailUrl)))
+            {
+                playlist.ThumbnailUrl = await _playlistRepository.ResolveThumbnailAsync(playlist);
+                _playlistRepository.Update(playlist);
+            }
+        }
+
+        public async void HandleNewPlaylist(string name)
+        {
+            var newPlaylist = new UserPlaylist
+            {
+                Name = name,
+                CreatedAt = DateTime.Now,
+                Sources = new List<PlaylistSource>(),
+                ThumbnailUrl = null,
+                IsActive = false
+            };
+            _playlistRepository.Add(newPlaylist);
+            Playlists.Add(newPlaylist);
+        }
+
+        public async void HandleNewSource(PlaylistSource source)
+        {
+            if (SelectedPlaylist != null)
+            {
+                SelectedPlaylist.Sources.Add(source);
+                _playlistRepository.Update(SelectedPlaylist);
+
+                if(SelectedPlaylist.Sources.Count==1)
+                {
+                    await ResolveThumbnailsAsync(new[] { SelectedPlaylist });
+                }
+
+                await _playlistManager.EnqueueAsync(
+                    new QueueEntry(source.Tag, source.Url, source.IsPlaylist),
+                    CancellationToken.None);
+            }
+        }
+
+        public async void HandleUpdatePlaylist(UserPlaylist playlist)
+        {
+            _playlistRepository.Update(playlist);
+        }
+
+        public async void HandleDeletePlaylist(UserPlaylist playlist)
+        {
+            _playlistRepository.Remove(playlist.Id);
+            var toRemove = Playlists.FirstOrDefault(p => p.Id == playlist.Id);
+            if (toRemove != null)
+                Playlists.Remove(toRemove);
+        }
+
+        public async void HandleSliderDrag(double dragValue)
+        {
+            var destSeek = _playlistManager.TotalDuration * dragValue;
+            await _playlistManager.SeekAsync(destSeek);
+        }
+
+        public async void HandleRemoveFromPlaylist(TrackDisplayItem item)
+        {
+            HandleRemoveFromQueue(item);
+            if(SelectedPlaylist is not null)
+            {
+                var removeIndex = SelectedPlaylist.Sources.FindIndex(s => !s.IsPlaylist && s.Url == item.Entry.Url);
+
+                if(removeIndex!=-1)
+                {
+                    SelectedPlaylist.Sources.RemoveAt(removeIndex);
+
+                    if(removeIndex==0)
+                    {
+                        await _playlistRepository.ClearThumbnailUrlAsync(SelectedPlaylist , CancellationToken.None);
+                        await ResolveThumbnailsAsync(new[] { SelectedPlaylist });
+                    }
+                }
+            }
+        }
+
+        public async void HandleRemoveFromQueue(TrackDisplayItem item)
+        {
+            var success = await _playlistManager.TryRemoveQueue(item.OrderNum - 1 , CancellationToken.None);
+
+            if(success)
+            {
+                AlbumTracks.Remove(item);
+                for(int i=item.OrderNum - 1; i < AlbumTracks.Count; i++)
+                {
+                    AlbumTracks[i].OrderNum--;
+                }
+            }
+        }
+
+        private static string FormatTime(TimeSpan t)
+            => t.ToString(t.TotalHours >= 1 ? @"h\:mm\:ss" : @"mm\:ss");
+    }
+}

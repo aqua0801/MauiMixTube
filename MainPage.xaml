@@ -1,0 +1,721 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="MauiMixTube.MainPage"
+             Shell.NavBarIsVisible="False"
+             xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
+             xmlns:playlists="clr-namespace:MauiMixTube.Models.Playlist"
+             xmlns:models="clr-namespace:MauiMixTube.Models"
+             xmlns:viewmodels="clr-namespace:MauiMixTube.ViewModels"
+             xmlns:converters="clr-namespace:MauiMixTube.Converters"
+             xmlns:managers="clr-namespace:MauiMixTube.Managers">
+
+    <ContentPage.Resources>
+        <toolkit:EventToCommandBehavior x:Key="EventArgsConverter" />
+        <toolkit:InvertedBoolConverter x:Key="InvertedBoolConverter" />
+    </ContentPage.Resources>
+
+    <!-- ══════════════════════════════════════════════════════════
+         Root: absolute Grid so sidebar overlays content
+         ══════════════════════════════════════════════════════════ -->
+    <Grid x:Name="RootGrid">
+
+        <!-- ─────────────────────────────────────────────────────
+             LAYER 1 — Ambient album art blurred background
+             ───────────────────────────────────────────────────── -->
+        <Image x:Name="BackgroundArt"
+               Source="placeholder_art.png"
+               Aspect="AspectFill"
+               Opacity="0.25" />
+
+        <!-- Gradient vignette over the blurred art -->
+        <Grid>
+            <Grid.Background>
+                <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                    <GradientStop Color="{AppThemeBinding Light=#CCF5F3FF, Dark=#EE0B0A12}"
+                                  Offset="0" />
+                    <GradientStop Color="{AppThemeBinding Light=#F5F3FF, Dark=#0B0A12}"
+                                  Offset="0.55" />
+                    <GradientStop Color="{AppThemeBinding Light=#F5F3FF, Dark=#0B0A12}"
+                                  Offset="1" />
+                </LinearGradientBrush>
+            </Grid.Background>
+        </Grid>
+
+        <!-- ─────────────────────────────────────────────────────
+             LAYER 2 — Main content column
+             ───────────────────────────────────────────────────── -->
+        <Grid RowDefinitions="Auto,*,Auto"
+              Padding="0,0,0,0">
+
+            <!-- ╔═══════════════════════════════════════╗
+                 ║  TOP BAR                              ║
+                 ╚═══════════════════════════════════════╝ -->
+            <Grid x:Name="TopBar"
+                  Grid.Row="0"
+                  ColumnDefinitions="48,*,48"
+                  Padding="12,52,12,8">
+
+                <!-- Hamburger -->
+                <Button x:Name="BtnSidebar"
+                        Grid.Column="0"
+                        Text="☰"
+                        Style="{StaticResource TopBarButtonStyle}"
+                        Clicked="OnSidebarToggle" />
+
+                <!-- Search -->
+                <SearchBar x:Name="GlobalSearch"
+                           Grid.Column="1"
+                           Placeholder="{Binding Path=[Topbar_Search_PlaceHolder] , Source={x:Static managers:LocalizationManager.Instance}}"
+                           Margin="8,0"
+                           HeightRequest="40"
+                           SearchButtonPressed="OnSearchButtonPressed"
+                           TextChanged="OnSearchTextChanged" />
+
+                <!-- More / settings -->
+                <Button x:Name="BtnSettings"
+                        Grid.Column="2"
+                        Text="⋮"
+                        Style="{StaticResource TopBarButtonStyle}"
+                        Clicked="OnSettingsClicked" />
+            </Grid>
+
+            <!-- ╔═══════════════════════════════════════╗
+                 ║  NOW PLAYING — centre stage           ║
+                 ╚═══════════════════════════════════════╝ -->
+            <ScrollView Grid.Row="1"
+                        VerticalScrollBarVisibility="Never">
+                <VerticalStackLayout Padding="24,8,24,16"
+                                     Spacing="0">
+
+                    <!-- Queue context chip -->
+                    <Border BackgroundColor="{DynamicResource IconButtonBackground}"
+                            StrokeThickness="0"
+                            StrokeShape="RoundRectangle 20"
+                            Padding="14,6"
+                            HorizontalOptions="Center"
+                            Margin="0,0,0,20">
+                        <HorizontalStackLayout Spacing="6">
+                            <Label Text="&#xe037;"
+                                   FontFamily="MaterialIcons-Regular"
+                                   TextColor="{DynamicResource Primary}"
+                                   FontSize="11"
+                                   VerticalOptions="Center" />
+                            <Label x:Name="QueueLabel"
+                                   Style="{StaticResource SectionHeaderLabel}"
+                                   VerticalOptions="Center">
+                                <Label.Text>
+                                    <MultiBinding StringFormat="{}{0} {1}">
+                                        <Binding Path="[Playing_From]" Source="{x:Static managers:LocalizationManager.Instance}" />
+
+                                        <Binding Path="PlayingFrom" />
+                                    </MultiBinding>
+                                </Label.Text>
+
+                                <Label.Triggers>
+
+                                    <DataTrigger TargetType="Label" Binding="{Binding PlayingFrom}" Value="">
+                                        <Setter Property="Text" Value="{Binding Path=[Nothing_Is_Playing] , Source={x:Static managers:LocalizationManager.Instance}}" />
+                                    </DataTrigger>
+
+                                    <DataTrigger TargetType="Label" Binding="{Binding PlayingFrom}" Value="{x:Null}">
+                                        <Setter Property="Text" Value="{Binding Path=[Nothing_Is_Playing] , Source={x:Static managers:LocalizationManager.Instance}}" />
+                                    </DataTrigger>
+                                </Label.Triggers>
+                                
+                            </Label>
+                        </HorizontalStackLayout>
+                    </Border>
+
+                    <!-- ── Album Art Card ── -->
+                    <Border Style="{StaticResource GlassCard}"
+                            Margin="8,0"
+                            Padding="0">
+                        <Grid>
+                            <!-- Art image -->
+                            <Image x:Name="AlbumArtImage"
+                                   Source="{Binding AlbumArtUrl}"
+                                   Aspect="AspectFill"
+                                   HeightRequest="300"
+                                   WidthRequest="300"
+                                   HorizontalOptions="Fill" />
+
+                            <!-- Gradient foot on art -->
+                            <Grid HeightRequest="80"
+                                  VerticalOptions="End">
+                                <Grid.Background>
+                                    <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                                        <GradientStop Color="{DynamicResource Transparent}"
+                                                      Offset="0" />
+                                        <GradientStop Color="{AppThemeBinding Light=#33F5F3FF, Dark=#550B0A12}"
+                                                      Offset="1" />
+                                    </LinearGradientBrush>
+                                </Grid.Background>
+                            </Grid>
+                        </Grid>
+                    </Border>
+
+                    <!-- ── Title, Artist, Actions ── -->
+                    <Grid ColumnDefinitions="*,Auto,Auto"
+                          Margin="4,20,4,4">
+                        <VerticalStackLayout Grid.Column="0" Spacing="4">
+                            <Label x:Name="SongTitleLabel"
+                                   Text="{Binding SongTitle}"
+                                   Style="{StaticResource TitleLabel}"
+                                   MaxLines="1" />
+                            <Label x:Name="ArtistLabel"
+                                   Text="{Binding Artist}"
+                                   Style="{StaticResource SubtitleLabel}" />
+                        </VerticalStackLayout>
+
+                        <!-- Like button -->
+                        <Button x:Name="BtnLike"
+                                Grid.Column="1"
+                                Text="{Binding LikeIcon}"
+                                FontFamily="MaterialIcons-Regular"
+                                Style="{StaticResource ActionButtonStyle}"
+                                Margin="4,0"
+                                TextColor="{AppThemeBinding Light={StaticResource LightTextPrimary}, Dark={StaticResource DarkTextPrimary}}"
+                                Command="{Binding LikeCommand}">
+                            <Button.Triggers>
+                                    <DataTrigger TargetType="Button" Binding="{Binding IsLiked}" Value="True">
+                                        <Setter Property="TextColor" Value = "{AppThemeBinding Light={StaticResource LightAccent}, Dark={StaticResource DarkAccent}}" />
+                                    </DataTrigger>
+                                </Button.Triggers>
+                        </Button>
+
+                        <!-- Add to queue -->
+                        <Button x:Name="BtnAddQueue"
+                                Grid.Column="2"
+                                Text="&#xe145;"
+                                Style="{StaticResource ActionButtonStyle}"
+                                Clicked="OnAddToQueueClicked" 
+                                FontFamily="MaterialIcons-Regular"
+                                TextColor="{AppThemeBinding Light={StaticResource LightTextPrimary}, Dark={StaticResource DarkTextPrimary}}"/>
+                    </Grid>
+
+                </VerticalStackLayout>
+            </ScrollView>
+
+            <!-- ╔═══════════════════════════════════════╗
+                 ║  BOTTOM: PROGRESS + CONTROLS          ║
+                 ║  + EXPANDER (album/lyrics panel)      ║
+                 ╚═══════════════════════════════════════╝ -->
+            <Grid Grid.Row="2">
+
+                <!-- Frosted glass backing for bottom area -->
+                <Border BackgroundColor="{DynamicResource CardBackground}"
+                        StrokeThickness="1"
+                        Stroke="{DynamicResource Divider}"
+                        StrokeShape="RoundRectangle 28,28,0,0"
+                        Padding="0">
+                    <!-- No content here, just the visual backing -->
+                </Border>
+
+                <VerticalStackLayout Padding="0,0,0,24" Spacing="0">
+
+                    <!-- Drag handle indicator -->
+                    <BoxView Style="{StaticResource ExpanderHandle}"
+                             Margin="0,10,0,6" />
+
+                    <!-- ── Expander (CommunityToolkit) ── -->
+                    <!--
+                         Direction="Up" keeps the header at the bottom
+                         and reveals content above it.
+                         Header = progress bar + playback controls (always visible)
+                         Content = Album Details tab OR Lyrics tab
+                    -->
+                    <toolkit:Expander x:Name="BottomExpander"
+                                      ExpandedChanged="OnExpanderChanged"
+                                      IsExpanded="{Binding IsBottomExpanderExpanded, Mode=TwoWay}">
+
+                        <!-- ─── EXPANDED CONTENT: Album / Lyrics Panel ─── -->
+                        <toolkit:Expander.Content>
+                            <Grid RowDefinitions="Auto,*"
+                                  Margin="20,0,20,16"
+                                  HeightRequest="300">
+
+                                <!-- Tab selector -->
+                                <Grid x:Name="TabBar"
+                                      Grid.Row="0"
+                                      ColumnDefinitions="*,*"
+                                      Margin="0,0,0,16">
+                                    <Button x:Name="BtnTabAlbum"
+                                            Grid.Column="0"
+                                            Text="{Binding Path=[Album_Button] , Source={x:Static managers:LocalizationManager.Instance}}"
+                                            FontSize="11"
+                                            FontAttributes="Bold"
+                                            CharacterSpacing="1.2"
+                                            BackgroundColor="{DynamicResource Transparent}"
+                                            TextColor="{DynamicResource Primary}"
+                                            Clicked="OnTabAlbumClicked" 
+                                            Command="{Binding SwitchTabCommand}"
+                                            CommandParameter="Album"/>
+                                    <Button x:Name="BtnTabLyrics"
+                                            Grid.Column="1"
+                                            Text="{Binding Path=[Lyrics_Button] , Source={x:Static managers:LocalizationManager.Instance}}"
+                                            FontSize="11"
+                                            FontAttributes="Bold"
+                                            CharacterSpacing="1.2"
+                                            BackgroundColor="{DynamicResource Transparent}"
+                                            TextColor="{DynamicResource TextSecondary}"
+                                            Clicked="OnTabLyricsClicked"
+                                            Command="{Binding SwitchTabCommand}"
+                                            CommandParameter="Lyrics"/>
+
+                                    <!-- Active tab indicator line -->
+                                    <BoxView x:Name="TabIndicator"
+                                             Grid.Column="0"
+                                             Color="{DynamicResource Primary}"
+                                             HeightRequest="2"
+                                             HorizontalOptions="Fill"
+                                             VerticalOptions="End"
+                                             Margin="16,0" />
+                                </Grid>
+
+                                <ScrollView Grid.Row="1"
+                                    Scrolled="OnAlbumPanelScrolled"
+                                    x:Name="AlbumPanel"
+                                    IsVisible="{Binding ActiveTab,
+                                    Converter={converters:EnumToBoolConverter},
+                                    ConverterParameter='Album'}">
+                                    <VerticalStackLayout x:Name="TrackList"
+                                        BindableLayout.ItemsSource="{Binding AlbumTracks}">
+                                        <BindableLayout.ItemTemplate>
+                                            <DataTemplate
+                                                x:DataType="models:TrackDisplayItem">
+                                                <Grid ColumnDefinitions="32,*,Auto,32"
+                                                    Padding="10,8"
+                                                    Style="{StaticResource TrackRowStyle}">
+
+                                                    <Grid.GestureRecognizers>
+                                                        <TapGestureRecognizer
+                                                        Command="{Binding BindingContext.PlayTrackCommand,
+                                                                  Source={x:Reference AlbumPanel}}"
+                                                        CommandParameter="{Binding .}" />
+                                                    </Grid.GestureRecognizers>
+
+                                                    <Label Grid.Column="0"
+                                                        Text="{Binding OrderNum}"
+                                                        Style="{StaticResource CaptionLabel}"
+                                                        VerticalOptions="Center"
+                                                        HorizontalOptions="Center" />
+                                                    <VerticalStackLayout Grid.Column="1"
+                                                                        Spacing="2"
+                                                                        VerticalOptions="Center">
+                                                        <Label Text="{Binding Title}"
+                                                            Style="{StaticResource SubtitleLabel}"
+                                                            FontSize="13" />
+                                                        <Label Text="{Binding Artist}"
+                                                            Style="{StaticResource CaptionLabel}" />
+                                                    </VerticalStackLayout>
+                                                    <Label Grid.Column="2"
+                                                        Text="{Binding Duration}"
+                                                        Style="{StaticResource CaptionLabel}"
+                                                        VerticalOptions="Center" />
+
+                                                    <Label Text="&#xe5d4;"
+                                                        FontFamily="MaterialIcons-Regular"
+                                                        IsVisible="{Binding IsFromFlattenedPlaylist, 
+                                                                    Converter={StaticResource InvertedBoolConverter}}"
+                                                        VerticalOptions="Center"
+                                                        HorizontalOptions="End"
+                                                        Grid.Column="3">
+                                                        <Label.Behaviors>
+                                                            <toolkit:TouchBehavior TouchGestureCompleted="OnTrackMoreOptionsTapped" />
+                                                        </Label.Behaviors>
+                                                    </Label>
+                                                </Grid>
+                                            </DataTemplate>
+                                        </BindableLayout.ItemTemplate>
+                                    </VerticalStackLayout>
+                                </ScrollView>
+
+                                <!-- LYRICS TAB CONTENT -->
+                                <ScrollView x:Name="LyricsPanel"
+                                            Grid.Row="1"
+                                            HeightRequest="280"
+                                            VerticalScrollBarVisibility="Never"
+                                            IsVisible="{Binding ActiveTab,
+                                            Converter={converters:EnumToBoolConverter},
+                                            ConverterParameter='Lyrics'}">
+                                    <Label x:Name="LyricsLabel"
+                                           Text="{Binding Path=[Lyrics_PlaceHolder] , Source={x:Static managers:LocalizationManager.Instance}}"
+                                           Style="{StaticResource LyricsLabel}"
+                                           Padding="8,0" />
+                                </ScrollView>
+
+                            </Grid>
+                        </toolkit:Expander.Content>
+
+                        <!-- ─── HEADER: Progress + Playback Controls ─── -->
+                        <toolkit:Expander.Header>
+                            <VerticalStackLayout Padding="20,0" Spacing="0">
+
+                                <!-- Progress bar + time stamps -->
+                                <Grid ColumnDefinitions="*"
+                                      Margin="0,0,0,4">
+                                    <Slider x:Name="ProgressSlider"
+                                            Minimum="0"
+                                            Maximum="1"
+                                            Value="{Binding Progress}"
+                                            DragStarted="OnSliderDragStarted"
+                                            DragCompleted="OnSliderDragCompleted">
+                                    </Slider>
+                                </Grid>
+                                <Grid ColumnDefinitions="*,*" Margin="4,-4,4,8">
+                                    <Label x:Name="CurrentTimeLabel"
+                                           Grid.Column="0"
+                                           Text="{Binding CurrentTime}"
+                                           Style="{StaticResource CaptionLabel}"
+                                           HorizontalOptions="Start" />
+                                    <Label x:Name="TotalTimeLabel"
+                                           Grid.Column="1"
+                                           Text="{Binding TotalTime}"
+                                           Style="{StaticResource CaptionLabel}"
+                                           HorizontalOptions="End" />
+                                </Grid>
+
+                                <!-- Playback controls row -->
+                                <Grid ColumnDefinitions="150,*,44,8,64,8,44,*,150"
+                                      Margin="0,0,0,8"
+                                      VerticalOptions="Center">
+
+                                    <!-- ── Volume slider ── -->
+                                    <Grid ColumnDefinitions="Auto,*,Auto"
+                                        Margin="4,12,4,0">
+                                        <Label Grid.Column="0"
+                                            Text="&#xE04D;"
+                                            FontFamily="MaterialIcons-Regular"
+                                            FontSize="14"
+                                            TextColor="{DynamicResource TextSecondary}"
+                                            VerticalOptions="Center" />
+                                        <Slider x:Name="VolumeSlider"
+                                            Grid.Column="1"
+                                            Minimum="0"
+                                            Maximum="100"
+                                            Value="{Binding Volume, Mode=TwoWay}"
+                                            Margin="8,0"
+                                            VerticalOptions="Center"
+                                            MinimumTrackColor="#7F56D9" 
+                                            MaximumTrackColor="#E4E7EC"
+                                            ThumbColor="#7F56D9"/>
+                                        <Label Grid.Column="2"
+                                           Text="&#xe050;"
+                                           FontFamily="MaterialIcons-Regular"
+                                           FontSize="14"
+                                           TextColor="{DynamicResource TextSecondary}"
+                                           VerticalOptions="Center" />
+                                    </Grid>
+
+                                    <!-- Shuffle -->
+        
+                                    <Button Grid.Column="1"
+                                        Text="&#xe043;"
+                                        FontFamily="MaterialIcons-Regular"
+                                        Style="{StaticResource ToggleButtonStyle}"
+                                        HorizontalOptions="End"
+                                        Command="{Binding ShuffleCommand}"
+                                        TextColor="{AppThemeBinding Light={StaticResource LightTextPrimary}, Dark={StaticResource DarkTextPrimary}}">
+
+                                        <Button.Triggers>
+                                            <DataTrigger TargetType="Button"
+                                                Binding="{Binding ShuffleOn}"
+                                                    Value="True">
+                                                <Setter Property="TextColor" Value = "{AppThemeBinding Light={StaticResource LightAccent}, Dark={StaticResource DarkAccent}}" />
+                                            </DataTrigger>
+                                        </Button.Triggers>
+                                    </Button>
+
+                                    <!-- Previous -->
+                                    <Button Grid.Column="2"
+                                            Text="&#xe045;"
+                                            FontFamily="MaterialIcons-Regular"
+                                            Style="{StaticResource TransportButtonStyle}"
+                                            Command="{Binding PreviousCommand}"/>
+
+                                    <!-- Play / Pause (primary large button) -->
+                                    <Button x:Name="BtnPlayPause"
+                                            Grid.Column="4"
+                                            Text="{Binding PlayPauseIcon}"
+                                            Command="{Binding PlayPauseCommand}"
+                                            FontFamily="MaterialIcons-Regular"
+                                            Style="{StaticResource PlayButtonStyle}"
+                                            VerticalOptions="Center"/>
+
+                                    <!-- Next -->
+                                    <Button Grid.Column="6"
+                                            Text="&#xe044;"
+                                            FontFamily="MaterialIcons-Regular"
+                                            Style="{StaticResource TransportButtonStyle}"
+                                            Command="{Binding NextCommand}" />
+
+                                    <!-- Repeat -->
+                                    <Button Grid.Column="7"
+                                        Text="{Binding RepeatIcon}"
+                                        FontFamily="MaterialIcons-Regular"
+                                        Style="{StaticResource ToggleButtonStyle}"
+                                        HorizontalOptions="Start"
+                                        Command="{Binding RepeatCommand}"
+                                        TextColor="{AppThemeBinding Light={StaticResource LightTextPrimary}, Dark={StaticResource DarkTextPrimary}}">
+                                        <Button.Triggers>
+                                            <DataTrigger TargetType="Button"
+                                                Binding="{Binding IsRepeatActive}" Value="True">
+                                                <Setter Property="TextColor" Value = "{AppThemeBinding Light={StaticResource LightAccent}, Dark={StaticResource DarkAccent}}" />
+                                            </DataTrigger>
+                                        </Button.Triggers>
+                                    </Button>
+
+
+                                </Grid>
+
+                                <!-- Expand chevron hint -->
+                                <Label x:Name="ExpandChevron"
+                                       Text="⌃"
+                                       TextColor="{DynamicResource TextMuted}"
+                                       FontSize="12"
+                                       HorizontalOptions="Center"
+                                       Margin="0,0,0,4" />
+
+                            </VerticalStackLayout>
+                        </toolkit:Expander.Header>
+
+                    </toolkit:Expander>
+                </VerticalStackLayout>
+            </Grid>
+
+        </Grid>
+        <!-- END main content -->
+
+        <!-- ─────────────────────────────────────────────────────
+             LAYER 3 — Sidebar overlay dimmer (tap to close)
+             ───────────────────────────────────────────────────── -->
+        <BoxView x:Name="SidebarDimmer"
+                 Color="{StaticResource SidebarOverlay}"
+                 IsVisible="False"
+                 Opacity="0">
+            <BoxView.GestureRecognizers>
+                <TapGestureRecognizer Tapped="OnDimmerTapped" />
+            </BoxView.GestureRecognizers>
+        </BoxView>
+
+        <!-- ─────────────────────────────────────────────────────
+             LAYER 4 — Sidebar panel (slides in from left)
+             ───────────────────────────────────────────────────── -->
+        <Grid x:Name="SidebarPanel"
+              WidthRequest="300"
+              HorizontalOptions="Start"
+              TranslationX="-300">
+
+            <!-- Sidebar glass background -->
+            <Border BackgroundColor="{DynamicResource SidebarBackground}"
+                    StrokeThickness="1"
+                    Stroke="{DynamicResource Divider}"
+                    StrokeShape="RoundRectangle 0,20,20,0">
+                <Border.Shadow>
+                    <Shadow Brush="{DynamicResource GlowTint}"
+                            Offset="8,0"
+                            Radius="40"
+                            Opacity="0.3" />
+                </Border.Shadow>
+            </Border>
+
+            <!-- Sidebar content -->
+            <Grid RowDefinitions="Auto,Auto,Auto,*,Auto"
+                  Padding="20,52,20,24">
+
+                <!-- ── Header row ── -->
+                <Grid Grid.Row="0"
+                      ColumnDefinitions="*,36"
+                      Margin="0,0,0,20">
+                    <VerticalStackLayout Grid.Column="0" Spacing="2">
+                        <Label Text="{Binding Path=[Sidebar_Library], Source={x:Static managers:LocalizationManager.Instance}}"
+                               Style="{StaticResource SectionHeaderLabel}" />
+                        <Label x:Name="LibraryCountLabel"
+                               FontAttributes="Bold">
+                            <Label.Style>
+                                <Style TargetType="Label" BasedOn="{StaticResource CaptionLabel}">
+                                    <Setter Property="Text">
+                                        <Setter.Value>
+                                            <MultiBinding StringFormat="{}{0} {1}">
+                                                <Binding Path="Playlists.Count" />
+                                                <Binding Path="[Sidebar_Playlists]" Source="{x:Static managers:LocalizationManager.Instance}" />
+                                            </MultiBinding>
+                                        </Setter.Value>
+                                    </Setter>
+
+                                    <Style.Triggers>
+                                        <DataTrigger TargetType="Label" 
+                                            Binding="{Binding Playlists.Count}" 
+                                            Value="1">
+                                            <Setter Property="Text">
+                                                <Setter.Value>
+                                                    <MultiBinding StringFormat="{}{0} {1}">
+                                                        <Binding Path="Playlists.Count" />
+                                                        <Binding Path="[Sidebar_Playlist]" Source="{x:Static managers:LocalizationManager.Instance}" />
+                                                    </MultiBinding>
+                                                </Setter.Value>
+                                            </Setter>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Label.Style>
+                        </Label>
+                    </VerticalStackLayout>
+                    <!-- Close button -->
+                    <Button Grid.Column="1"
+                            Text="&#xe5cd;"
+                            FontFamily="MaterialIcons-Regular"
+                            Style="{StaticResource TopBarButtonStyle}"
+                            FontSize="14"
+                            Clicked="OnSidebarToggle" />
+                </Grid>
+
+                <!-- ── Sidebar search ── -->
+                <SearchBar Grid.Row="1"
+                           x:Name="SidebarSearch"
+                           Placeholder="{Binding Path=[Sidebar_Search_PlaceHolder] , Source={x:Static managers:LocalizationManager.Instance}}"
+                           HeightRequest="40"
+                           Margin="0,0,0,16"
+                           TextChanged="OnSidebarSearchChanged" />
+
+                <!-- ── Pinned items (quick links) ── -->
+                <VerticalStackLayout Grid.Row="2"
+                                     Spacing="4"
+                                     Margin="0,0,0,12">
+                    <Label Text="{Binding Path=[Sidebar_Quick_Access] , Source={x:Static managers:LocalizationManager.Instance}}"
+                           Style="{StaticResource SectionHeaderLabel}"
+                           Margin="4,0,0,6" />
+                    <Border Style="{StaticResource PlaylistItemBorder}">
+                        <Grid ColumnDefinitions="28,*">
+                            <Label Grid.Column="0" Text="&#xe87d;"
+                                   FontFamily="MaterialIcons-Regular"
+                                   TextColor="{DynamicResource Accent}"
+                                   FontSize="16"
+                                   VerticalOptions="Center" />
+                            <Label Grid.Column="1"
+                                   Text="{Binding Path=[Sidebar_Liked_Songs] , Source={x:Static managers:LocalizationManager.Instance}}"
+                                   Style="{StaticResource SubtitleLabel}"
+                                   VerticalOptions="Center"
+                                   Margin="8,0" />
+                        </Grid>
+                        <Border.GestureRecognizers>
+                            <TapGestureRecognizer Tapped="OnLikedSongsTapped" />
+                        </Border.GestureRecognizers>
+                    </Border>
+                    <Border Style="{StaticResource PlaylistItemBorder}">
+                        <Grid ColumnDefinitions="28,*">
+                            <Label Grid.Column="0" 
+                                   Text="&#xe192;"
+                                   FontFamily="MaterialIcons-Regular"
+                                   FontSize="16"
+                                   VerticalOptions="Center" />
+                            <Label Grid.Column="1"
+                                   Text="{Binding Path=[Sidebar_Recently_Played] , Source={x:Static managers:LocalizationManager.Instance}}"
+                                   Style="{StaticResource SubtitleLabel}"
+                                   VerticalOptions="Center"
+                                   Margin="8,0" />
+                        </Grid>
+                        <Border.GestureRecognizers>
+                            <TapGestureRecognizer Tapped="OnRecentlyPlayedTapped" />
+                        </Border.GestureRecognizers>
+                    </Border>
+                </VerticalStackLayout>
+
+                <BoxView Grid.Row="2"
+                         Style="{StaticResource Separator}"
+                         VerticalOptions="End" />
+
+                <!-- ── Playlist collection ── -->
+                <ScrollView Grid.Row="3"
+                            VerticalScrollBarVisibility="Never">
+                    <VerticalStackLayout Spacing="0">
+                        <Label Text="{Binding Path=[Playlists] , Source={x:Static managers:LocalizationManager.Instance}}"
+                               Style="{StaticResource SectionHeaderLabel}"
+                               Margin="4,8,0,8" />
+                        <CollectionView ItemsSource="{Binding Playlists}"
+                                SelectionMode="Single"
+                                SelectedItem="{Binding SelectedPlaylist, Mode=TwoWay}"
+                                x:Name="PlaylistCollection">
+
+                            <CollectionView.ItemsLayout>
+                                <LinearItemsLayout Orientation="Vertical" ItemSpacing="8" />
+                            </CollectionView.ItemsLayout>
+
+                            <CollectionView.ItemTemplate>
+                                <DataTemplate x:DataType="playlists:UserPlaylist">
+                                    <Border Style="{StaticResource PlaylistItemBorder}" x:Name="ItemContainer">
+
+                                        <Grid ColumnDefinitions="44,*,Auto,Auto" Padding="0,0,10,0">
+                                            <Border Grid.Column="0"
+                                                StrokeThickness="0"
+                                                StrokeShape="RoundRectangle 8"
+                                                HeightRequest="40"
+                                                WidthRequest="40">
+                                                <Image Source="{Binding ThumbnailUrl}"
+                                                    Aspect="AspectFill" />
+                                            </Border>
+                                            <VerticalStackLayout Grid.Column="1"
+                                                Spacing="2"
+                                                VerticalOptions="Center"
+                                                Margin="10,0">
+                                                <Label Text="{Binding Name}"
+                                                    Style="{StaticResource SubtitleLabel}" />
+                                                <Label Text="{Binding SongCountText}"
+                                                    Style="{StaticResource CaptionLabel}" />
+                                            </VerticalStackLayout>
+                                            <Ellipse Grid.Column="2"
+                                                Fill="{AppThemeBinding Light={StaticResource LightPrimary},
+                                                Dark={StaticResource DarkPrimary}}"
+                                                WidthRequest="8"
+                                                HeightRequest="8"
+                                                VerticalOptions="Center"
+                                                IsVisible="{Binding IsActive}" />
+
+                                            <Label Grid.Column="3"
+                                                Text="&#xe5d4;" 
+                                                FontFamily="MaterialIcons-Regular"
+                                                FontSize="24"
+                                                VerticalOptions="Center"
+                                                HorizontalOptions="Center"
+                                                TextColor="{AppThemeBinding Light={StaticResource LightPrimary}, Dark={StaticResource DarkPrimary}}"
+                                                Padding="10">
+                                                <Label.Behaviors>
+                                                    <toolkit:TouchBehavior TouchGestureCompleted="OnMoreOptionsTapped" />
+                                                </Label.Behaviors>
+                                            </Label>
+                                        </Grid>
+                                    </Border>
+                                </DataTemplate>
+                            </CollectionView.ItemTemplate>
+                        </CollectionView>
+                    </VerticalStackLayout>
+                </ScrollView>
+
+                <!-- ── Sidebar footer ── -->
+                <Grid Grid.Row="4"
+                      ColumnDefinitions="*,*"
+                      Margin="0,12,0,0">
+                    <Button Grid.Column="0"
+                            Text="{Binding Path=[Settings],Source={x:Static managers:LocalizationManager.Instance}, StringFormat='⚙ {0}'}"
+                            BackgroundColor="{DynamicResource Transparent}"
+                            TextColor="{DynamicResource TextSecondary}"
+                            FontSize="12"
+                            Clicked="OnSettingsClicked" />
+                    <Button Grid.Column="1"
+                            Text="{Binding Path=[Playlist],Source={x:Static managers:LocalizationManager.Instance}, StringFormat='+ {0}'}"
+                            BackgroundColor="{DynamicResource IconButtonBackground}"
+                            TextColor="{DynamicResource Primary}"
+                            CornerRadius="12"
+                            FontSize="12"
+                            Clicked="OnNewPlaylistClicked" />
+                </Grid>
+
+            </Grid>
+        </Grid>
+        <!-- END sidebar -->
+
+    </Grid>
+    <!-- END RootGrid -->
+
+</ContentPage>

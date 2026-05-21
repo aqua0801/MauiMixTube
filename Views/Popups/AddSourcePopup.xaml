@@ -1,0 +1,79 @@
+<!-- AddSourcePopup.xaml -->
+<toolkit:Popup xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+               xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+               xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
+               xmlns:models="clr-namespace:MauiMixTube.Models.Playlist"
+               x:Class="MauiMixTube.Views.Popups.AddSourcePopup"
+               BackgroundColor="Transparent"
+               x:TypeArguments="models:PlaylistSource">
+
+    <Border BackgroundColor="{AppThemeBinding Light={StaticResource LightSurface},
+                                              Dark={StaticResource DarkSurface}}"
+            StrokeThickness="0"
+            StrokeShape="RoundRectangle 24,24,0,0"
+            Padding="24">
+        <VerticalStackLayout Spacing="20">
+
+            <!-- Handle -->
+            <BoxView Style="{StaticResource ExpanderHandle}" />
+
+            <Label Text="Add Source"
+                   Style="{StaticResource TitleLabel}"
+                   FontSize="18" />
+
+            <!-- URL Entry -->
+            <Border StrokeShape="RoundRectangle 12"
+                    Stroke="{AppThemeBinding Light={StaticResource LightDivider},
+                                             Dark={StaticResource DarkDivider}}"
+                    Padding="16,12">
+                <Entry x:Name="UrlEntry"
+                       Placeholder="Paste YouTube / Bilibili URL..."
+                       IsSpellCheckEnabled="False"
+                       IsTextPredictionEnabled="False"
+                       PlaceholderColor="{AppThemeBinding 
+                           Light={StaticResource LightTextSecondary},
+                           Dark={StaticResource DarkTextSecondary}}"
+                       TextColor="{AppThemeBinding 
+                           Light={StaticResource LightTextPrimary},
+                           Dark={StaticResource DarkTextPrimary}}"
+                       TextChanged="OnUrlChanged" />
+            </Border>
+
+            <!-- Platform chips -->
+            <VerticalStackLayout Spacing="8">
+                <Label Text="Platform"
+                       Style="{StaticResource SectionHeaderLabel}" />
+                <FlexLayout x:Name="TagChips"
+                            Wrap="Wrap"
+                            Direction="Row"
+                            JustifyContent="Start"
+                            AlignItems="Start" />
+            </VerticalStackLayout>
+
+            <!-- Single / Playlist toggle -->
+            <VerticalStackLayout Spacing="8">
+                <Label Text="Type"
+                       Style="{StaticResource SectionHeaderLabel}" />
+                <HorizontalStackLayout Spacing="24">
+                    <RadioButton x:Name="RadioSingle"
+                                 Content="Single"
+                                 IsChecked="True"
+                                 GroupName="SourceType" />
+                    <RadioButton x:Name="RadioPlaylist"
+                                 Content="Playlist"
+                                 GroupName="SourceType" />
+                </HorizontalStackLayout>
+            </VerticalStackLayout>
+
+            <!-- Add button -->
+            <Button Text="Add"
+                    Style="{StaticResource PlayButtonStyle}"
+                    WidthRequest="-1"
+                    HorizontalOptions="Fill"
+                    HeightRequest="52"
+                    CornerRadius="14"
+                    Clicked="OnAddClicked" />
+
+        </VerticalStackLayout>
+    </Border>
+</toolkit:Popup>

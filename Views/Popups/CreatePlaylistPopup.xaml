@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<toolkit:Popup xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+               xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+               xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
+               x:Class="MauiMixTube.Views.Popups.CreatePlaylistPopup"
+               x:TypeArguments="x:String"
+               x:Name="thisPopup"
+               BackgroundColor="Transparent"
+               CanBeDismissedByTappingOutsideOfPopup="True"
+               Opened="OnPopupOpened">
+
+    <Border BackgroundColor="{AppThemeBinding Light={StaticResource LightSurface},
+                                              Dark={StaticResource DarkSurface}}"
+            StrokeThickness="1"
+            Stroke="{AppThemeBinding Light={StaticResource LightDivider},
+                                     Dark={StaticResource DarkDivider}}"
+            StrokeShape="RoundRectangle 24,24,0,0"
+            Padding="24,0,24,36">
+
+        <VerticalStackLayout Spacing="0">
+
+            <!-- Drag handle -->
+            <BoxView Style="{StaticResource ExpanderHandle}"
+                     Margin="0,12,0,24" />
+
+            <!-- Title -->
+            <Label Text="Create Playlist"
+                   Style="{StaticResource TitleLabel}"
+                   FontSize="20"
+                   Margin="0,0,0,20" />
+
+            <!-- Name Entry -->
+            <Border StrokeShape="RoundRectangle 14"
+                    StrokeThickness="1.5"
+                    Stroke="{AppThemeBinding Light={StaticResource LightDivider},
+                                             Dark={StaticResource DarkDivider}}"
+                    BackgroundColor="{AppThemeBinding Light={StaticResource LightSidebarItem},
+                                                     Dark={StaticResource DarkSidebarItem}}"
+                    Padding="16,4"
+                    Margin="0,0,0,8">
+                <Entry x:Name="NameEntry"
+                       Placeholder="Playlist Name..."
+                       ReturnType="Done"
+                       MaxLength="50"
+                       ClearButtonVisibility="WhileEditing"
+                       TextChanged="OnNameChanged"
+                       Completed="OnEntryCompleted">
+                </Entry>
+            </Border>
+
+            <!-- Character count -->
+            <Label x:Name="CharCountLabel"
+                   Text="0 / 50"
+                   Style="{StaticResource CaptionLabel}"
+                   HorizontalOptions="End"
+                   Margin="0,0,4,20" />
+
+            <!-- Action buttons -->
+            <Grid ColumnDefinitions="*,12,*">
+
+                <!-- Cancel -->
+                <Border Grid.Column="0"
+                        StrokeShape="RoundRectangle 14"
+                        StrokeThickness="1"
+                        Stroke="{AppThemeBinding Light={StaticResource LightDivider},
+                                                 Dark={StaticResource DarkDivider}}"
+                        BackgroundColor="Transparent"
+                        Padding="0">
+                    <Button Text="Cancel"
+                            BackgroundColor="Transparent"
+                            TextColor="{AppThemeBinding Light={StaticResource LightTextSecondary},
+                                                        Dark={StaticResource DarkTextSecondary}}"
+                            HeightRequest="50"
+                            FontSize="15"
+                            Clicked="OnCancelClicked" />
+                </Border>
+
+                <!-- Create -->
+                <Button Grid.Column="2"
+                        x:Name="CreateButton"
+                        Text="Create"
+                        HeightRequest="50"
+                        FontSize="15"
+                        FontAttributes="Bold"
+                        CornerRadius="14"
+                        IsEnabled="False"
+                        Clicked="OnCreateClicked" 
+                        BackgroundColor="{AppThemeBinding Light={StaticResource LightPrimary}, Dark={StaticResource DarkPrimary}}"
+                        TextColor="{AppThemeBinding Light={StaticResource AlwaysWhite}, Dark={StaticResource AlwaysWhite}}">
+
+                    <Button.Shadow>
+                        <Shadow Offset="0,4" Radius="16" Opacity="0.4"
+                                Brush="{AppThemeBinding Light={StaticResource GlowColor}, Dark={StaticResource GlowColorDark}}">
+                        </Shadow>
+                    </Button.Shadow>
+
+                    <Button.Triggers>
+                        <DataTrigger TargetType="Button"
+                                     Binding="{Binding IsEnabled, Source={x:Reference CreateButton}}"
+                                     Value="False">
+                            <Setter Property="Opacity" Value="0.4" />
+                            <Setter Property="Shadow" Value="{x:Null}" />
+                        </DataTrigger>
+                    </Button.Triggers>
+                </Button>
+
+            </Grid>
+
+        </VerticalStackLayout>
+    </Border>
+
+</toolkit:Popup>
