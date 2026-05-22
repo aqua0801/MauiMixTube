@@ -1,9 +1,7 @@
 ﻿using MauiMixTube.Helper;
-using MauiMixTube.Helpers;
 using MauiMixTube.Managers;
 using System.Text.Json;
 using System.Text.RegularExpressions;
-using static Android.Preferences.PreferenceActivity;
 
 namespace MauiMixTube.Models.Settings
 {

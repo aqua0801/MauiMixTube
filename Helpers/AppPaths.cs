@@ -38,7 +38,7 @@ namespace MauiMixTube.Helper
             await ExtractBinaryAsync(Path.Combine("Languages", "en-US.json"),Path.Combine(LanguagesDir, "en-US.json"));
             await ExtractBinaryAsync(Path.Combine("Languages", "zh-TW.json"), Path.Combine(LanguagesDir, "zh-TW.json"));
             await ExtractBinaryAsync("ffmpeg.exe", FfmpegBinary);
-            await ExtractBinaryAsync("ffprobe.exe", Fmprobe);
+            await ExtractBinaryAsync("ffprobe.exe", FfprobeBinary);
             await ExtractBinaryAsync("OpenAL32.dll", "OpenAL32.dll");
         }
 

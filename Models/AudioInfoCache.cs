@@ -11,6 +11,7 @@ namespace MauiMixTube.Models
         public string OriginalUrl { get; init; } = string.Empty;
         public string SourceUrl { get; init; } = string.Empty;
         public string CachedFilePath { get; set; } = string.Empty;
+        public string FfmpegHeader { get; init; } = string.Empty;
         public DateTime FetchedAt { get; init; } = DateTime.UtcNow;
 
         public static implicit operator AudioInfoCache(AudioInfo info) => new()
@@ -23,6 +24,7 @@ namespace MauiMixTube.Models
             ThumbnailUrl = info.Fetch.ThumbnailUrl,
             SourceUrl = info.Fetch.SourceUrl,
             CachedFilePath = info.Fetch.CachedFilePath ?? string.Empty,
+            FfmpegHeader = info.Fetch.FfmpegHeader,
             FetchedAt = DateTime.UtcNow
         };
 
@@ -39,6 +41,7 @@ namespace MauiMixTube.Models
                 { 
                     SourceUrl = cache.SourceUrl ,
                     ThumbnailUrl = cache.ThumbnailUrl ,
+                    FfmpegHeader = cache.FfmpegHeader,
                     CachedFilePath = string.IsNullOrEmpty(cache.CachedFilePath)
                                     ? null
                                     : cache.CachedFilePath,

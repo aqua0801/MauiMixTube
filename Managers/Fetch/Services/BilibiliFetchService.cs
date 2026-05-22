@@ -1,14 +1,22 @@
-﻿using MauiMixTube.Models;
+﻿using AngleSharp.Media;
+using MauiMixTube.Models;
 using MauiMixTube.Models.Fetch;
-using System;
-using System.Collections.Generic;
-using System.Text;
+using MauiMixTube.Models.Settings;
+
 
 namespace MauiMixTube.Managers.Fetch.Services
 {
     public class BilibiliFetchService : FetchService
     {
+        private readonly BilibiliDownloader _bilibiliDownloader;
+
+        public BilibiliFetchService(BilibiliDownloader bilibiliDownloader)
+        {
+            _bilibiliDownloader = bilibiliDownloader;
+        }
+
         public override WebTag SupportedTag => WebTag.Bilibili;
+        public override bool SupportsLyrics => false;
 
         public override bool CanHandle(WebTag tag, string url)
         {
@@ -20,9 +28,10 @@ namespace MauiMixTube.Managers.Fetch.Services
                 url.Contains("bilivideo.com");
         }
 
-        protected override Task<AudioInfo?> OnResolveAsync(string url, CancellationToken ct = default)
+        protected override async Task<AudioInfo?> OnResolveAsync(string url, CancellationToken ct = default)
         {
-            throw new NotImplementedException();
+            return await _bilibiliDownloader.ResolveAudioStreamDataAsync(url, ct);
         }
+
     }
 }
