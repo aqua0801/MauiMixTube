@@ -24,6 +24,7 @@ namespace MauiMixTube.Models
                     BindingFlags.Public | BindingFlags.Static))
                 .Where(f => f.FieldType == typeof(WebTag))
                 .Select(f => (WebTag)f.GetValue(null)!)
+                .Where(t => t is not null && t != WebTag.None)
                 .ToList();
 
             return _cache;
