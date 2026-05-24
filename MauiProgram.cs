@@ -1,6 +1,7 @@
 ﻿using CommunityToolkit.Maui;
 using MauiMixTube.Audio;
 using MauiMixTube.Extensions;
+using MauiMixTube.Helper;
 using MauiMixTube.Managers;
 using MauiMixTube.Managers.Fetch;
 using MauiMixTube.Managers.Fetch.Handlers;
@@ -11,6 +12,7 @@ using MauiMixTube.ViewModels;
 using MauiMixTube.Views.Popups;
 using Microsoft.Extensions.Http;
 using Microsoft.Extensions.Logging;
+using YoutubeDLSharp;
 
 namespace MauiMixTube
 {
@@ -47,6 +49,11 @@ namespace MauiMixTube
             //fetch handler
             builder.Services.AddSingleton<FetchService, YoutubeFetchService>();
             builder.Services.AddSingleton<FetchService, BilibiliFetchService>();
+            builder.Services.AddSingleton<YoutubeDL>(_ => new YoutubeDL
+            {
+                YoutubeDLPath = AppPaths.YtDlpBinary,
+                FFmpegPath = AppPaths.FfmpegBinary,
+            });
             builder.Services.AddSingleton<FetchManager>();
             builder.Services.AddSingleton<AudioPipeline>();
             builder.Services.AddSingleton<CacheManager>();

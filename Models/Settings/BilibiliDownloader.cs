@@ -1,5 +1,7 @@
-﻿using MauiMixTube.Helper;
+﻿using CommunityToolkit.Mvvm.Messaging;
+using MauiMixTube.Helper;
 using MauiMixTube.Managers;
+using MauiMixTube.Messages;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 
@@ -21,39 +23,47 @@ namespace MauiMixTube.Models.Settings
         private readonly SettingsManager _settingsManager;
         private readonly HttpClient _http;
 
-        private static readonly string[] _userAgents =
-        {
-            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/112.0.0.0 Safari/537.36",
-            "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 Safari/537.36",
-        };
-
         public BilibiliDownloader(SettingsManager settingsManager)
         {
             _settingsManager = settingsManager;
             var handler = new HttpClientHandler
             {
                 AutomaticDecompression = System.Net.DecompressionMethods.GZip |
-                                         System.Net.DecompressionMethods.Deflate
+                                         System.Net.DecompressionMethods.Deflate,
+                UseCookies = true,
+                CookieContainer = new()
             };
             _http = new HttpClient(handler);
             _http.DefaultRequestHeaders.Referrer = new Uri(DefaultReferer);
-            RefreshUserAgent();
+
+            SetUserAgent(settingsManager.UserAgent);
+
+            WeakReferenceMessenger.Default.Register<UserAgentChangedMessage>(this, (r, m) =>
+            {
+                SetUserAgent(m.NewUserAgent);
+            });
         }
 
-        private void RefreshUserAgent()
+        public async Task OnStartupAsync(CancellationToken ct = default)
         {
-            _http.DefaultRequestHeaders.UserAgent.Clear();
-            var ua = _userAgents[Random.Shared.Next(_userAgents.Length)];
-            while (!_http.DefaultRequestHeaders.UserAgent.TryParseAdd(ua)) ;
+            await WarmUpAsync();
+        }
+        private async Task WarmUpAsync()
+        {
+            await _http.GetAsync("https://www.bilibili.com");
         }
 
-        private string GetCurrentUserAgent()
-            => string.Join(" ", _http.DefaultRequestHeaders.UserAgent.Select(ua => ua.ToString()));
+        private void SetUserAgent(string ua)
+        {
+            var old = _http.DefaultRequestHeaders.UserAgent.ToString();
+            _http.DefaultRequestHeaders.UserAgent.Clear();
+            if (!_http.DefaultRequestHeaders.UserAgent.TryParseAdd(ua))
+                _http.DefaultRequestHeaders.UserAgent.TryParseAdd(old);
+        }
 
         private async Task<BilibiliVideoMetadata?> GetMetadataAsync(string url, MediaType type , CancellationToken ct)
         {
-            RefreshUserAgent();
-            string ua = GetCurrentUserAgent();
+            string ua = _settingsManager.UserAgent;
             var html = await FetchHtmlAsync(url);
             var meta = ResolveMetadataFromHtml(html);
             var header = MediaValidator.ConvertHttpClientToFfmpegHeaderArg(_http);
@@ -88,7 +98,6 @@ namespace MauiMixTube.Models.Settings
             var response = await _http.SendAsync(new HttpRequestMessage(HttpMethod.Get, url));
             return await response.Content.ReadAsStringAsync();
         }
-
 
         private static (JsonElement video, JsonElement audio) ExtractDashFromHtml(string html)
         {

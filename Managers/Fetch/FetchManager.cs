@@ -1,6 +1,8 @@
-﻿using MauiMixTube.Models;
+﻿using MauiMixTube.Helper;
+using MauiMixTube.Models;
 using MauiMixTube.Models.Fetch;
 using MauiMixTube.Models.Playlist;
+using YoutubeDLSharp;
 
 namespace MauiMixTube.Managers.Fetch
 {
@@ -8,15 +10,29 @@ namespace MauiMixTube.Managers.Fetch
     {
         private readonly CacheManager _cacheManager;
         private readonly List<FetchService> _services = new();
+        private readonly YoutubeDL _ytdl;
 
-        public FetchManager(IEnumerable<FetchService> services , CacheManager cacheManager)
+        public FetchManager(IEnumerable<FetchService> services , CacheManager cacheManager , YoutubeDL ytdl)
         {
             _services = services.ToList();
             _cacheManager = cacheManager;
+            _ytdl = ytdl;
         }
 
         public async Task OnStartupAsync(CancellationToken ct = default)
         {
+            try
+            {
+                Console.WriteLine($"yt-dlp version check : {_ytdl.Version}");
+            }
+            catch
+            {
+                Console.WriteLine("yt-dlp is missing , redownloading...");
+                await YoutubeDLSharp.Utils.DownloadYtDlp(AppPaths.BinDir);
+                _ytdl.YoutubeDLPath = AppPaths.YtDlpBinary;
+                _ytdl.FFmpegPath = AppPaths.FfmpegBinary;
+            }
+
             await Task.WhenAll(_services.Select(s => s.OnStartupAsync(ct)));
         }
 

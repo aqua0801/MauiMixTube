@@ -37,37 +37,24 @@ namespace MauiMixTube.Managers.Fetch.Handlers
             NoPlaylist = true
         };
 
-        public YoutubeFetchService(SettingsManager settingsManager)
+        public YoutubeFetchService(SettingsManager settingsManager , YoutubeDL ytdl)
         {
+            _ytdl = ytdl;
+            _client = new YoutubeClient();
+
             WeakReferenceMessenger.Default
                 .Register<QualityChangedMessage>(this, (r, m) =>
                 {
                     ApplyFetchQuality(m.Value);
                 });
 
-            _ytdl = CreateYoutubeDL();
-            _client = new YoutubeClient();
             
             ApplyFetchQuality(settingsManager.FetchQuality);
         }
 
         public override WebTag SupportedTag => WebTag.YouTube;
 
-        public override async Task OnStartupAsync(CancellationToken ct = default)
-        {
-            try
-            {
-                var ytdl = CreateYoutubeDL();
-                Console.WriteLine($"yt-dlp version check : {ytdl.Version}");
-                _ytdl = ytdl;
-            }
-            catch
-            {
-                Console.WriteLine("yt-dlp is missing , redownloading...");
-                await YoutubeDLSharp.Utils.DownloadYtDlp(AppPaths.BinDir);
-                _ytdl = CreateYoutubeDL();
-            }
-        }
+
         public override bool CanHandle(WebTag webTag, string url)
             => webTag == WebTag.YouTube
             || CanDetectFromUrl(url);
@@ -76,12 +63,6 @@ namespace MauiMixTube.Managers.Fetch.Handlers
             => url.Contains("youtube.com")
             || url.Contains("youtu.be");
 
-        private static YoutubeDL CreateYoutubeDL()
-            => new ()
-            {
-                YoutubeDLPath = AppPaths.YtDlpBinary,
-                FFmpegPath = AppPaths.FfmpegBinary
-            };
 
         private void ApplyFetchQuality(FetchQuality quality)
         {
@@ -123,7 +104,6 @@ namespace MauiMixTube.Managers.Fetch.Handlers
 
                 if (endpoint == FetchEndpoint.Ytdlp)
                 {
-                    _ytdl ??= CreateYoutubeDL();
                     var result = await _ytdl.RunVideoDataFetch(
                         url,
                         overrideOptions: _options
