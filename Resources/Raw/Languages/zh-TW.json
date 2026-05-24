@@ -56,6 +56,9 @@
     "Settings_Open" : "開啟",
 
     "Settings_Network" : "網路",
+    "Settings_UserAgent" : "使用者代理",
+    "Settings_Rotate_UA" : "輪替預設的使用者代理",
+    "Settings_Reset_UA" : "重置使用者代理",
     "Settings_MaxConcurrent" : "最大抓取併發數",
     "Settings_MaxConcurrentDesc" : "允許多少執行緒同時間處理抓取服務 數量越多並行處理速度越快但具有更大的硬體壓力",
     "Settings_FetchPageSize":"預覽單次抓取數",

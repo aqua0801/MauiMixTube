@@ -1,5 +1,6 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using MauiMixTube.Helper;
 using MauiMixTube.Managers;
 using MauiMixTube.Models.Settings;
 #if WINDOWS
@@ -23,6 +24,7 @@ public partial class SettingsViewModel : ObservableObject
         CurrentTheme = settingsManager.Theme;
         Volume = settingsManager.Volume;
         SelectedQuality = settingsManager.FetchQuality;
+
         MaxCacheSizeMb = settingsManager.MaxCacheSizeMb;
         MaxConcurrentFetches = settingsManager.MaxConcorrentFetches;
         FetchPageSize = settingsManager.FetchPageSize;
@@ -33,6 +35,7 @@ public partial class SettingsViewModel : ObservableObject
         CacheUsageText = _cacheManager.UsageText;
         CacheUsageRatio = _cacheManager.UsageRatio;
         MaxCacheSizeMb = cacheManager.MaxSizeBytes / 1024 / 1024;
+        UserAgent = settingsManager.UserAgent;
     }
 
     public LocalizationManager Localization => LocalizationManager.Instance;
@@ -142,9 +145,27 @@ public partial class SettingsViewModel : ObservableObject
     }
 
     // Fetch
+    [ObservableProperty] public partial string UserAgent { get; set; }
     [ObservableProperty] public partial int MaxConcurrentFetches { get; set; }
     [ObservableProperty] public partial int FetchPageSize { get; set; }
     [ObservableProperty] public partial int MaxRetryAttempts { get; set; }
+
+    [RelayCommand]
+    private void RotateUserAgent()
+    {
+        UserAgent = UserAgentFallback.Next(UserAgent);
+    }
+
+    [RelayCommand]
+    private void ResetUserAgent()
+    {
+        UserAgent = UserAgentFallback.Default;
+    }
+
+    partial void OnUserAgentChanged(string value)
+    {
+        _settingsManager.UserAgent = value;
+    }
 
     partial void OnMaxConcurrentFetchesChanged(int value)
     {

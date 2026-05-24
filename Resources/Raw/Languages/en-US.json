@@ -56,13 +56,16 @@
     "Settings_Open" : "Open",
 
     "Settings_Network" : "Network",
+    "Settings_UserAgent" : "User Agent",
+    "Settings_Rotate_UA" : "Rotate Default User Agent",
+    "Settings_Reset_UA" : "Reset User Agent",
     "Settings_MaxConcurrent" : "Max Concurrent Fetches",
     "Settings_MaxConcurrentDesc" : "Controls how many threads process fetching services simultaneously. Higher numbers increase parallel speed but place more strain on hardware.",
-    
     "Settings_MaxRetry" : "Max Retry",
     "Settings_MaxRetryDesc" : "The maximum number of attempts for a single fetch service. It will be abandoned if exceeded.",
     "Settings_FetchPageSize": "Preview Fetch Limit",
     "Settings_FetchPageSizeDesc": "The maximum number of metadata items to fetch forward when triggering an album preview.",
+    
     "Settings_SourceCode" : "Source code",
     "Settings_Licenses" : "Licenses"
 

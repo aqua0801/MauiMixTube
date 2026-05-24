@@ -206,6 +206,12 @@
         </Style.Triggers>
     </Style>
 
+    <!-- User Agent Entry -->
+    <Style x:Key="SettingsEntryStyle" TargetType="Entry">
+        <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource LightTextSecondary}, Dark={StaticResource DarkTextSecondary}}" />
+        <Setter Property="BackgroundColor" Value="Transparent" />
+    </Style>
+
     <Style x:Key="NavItemStyle" TargetType="Border">
         <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource LightSidebarItem}, Dark={StaticResource DarkSidebarItem}}" />
         <Setter Property="StrokeThickness" Value="0" />

@@ -172,6 +172,21 @@ namespace MauiMixTube.Managers
             }
         }
 
+        public string UserAgent
+        {
+            get => Current.Fetch.UserAgent;
+            set
+            {
+                if(value != Current.Fetch.UserAgent)
+                {
+                    Current.Fetch.UserAgent = value;
+                    ScheduleSave();
+                    WeakReferenceMessenger.Default.Send(new UserAgentChangedMessage(value));
+                }
+            }
+        }
+
+
         public FetchQuality FetchQuality
         {
             get => Current.Fetch.Quality;

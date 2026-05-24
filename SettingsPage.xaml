@@ -573,6 +573,38 @@
                            Style="{StaticResource SectionHeaderLabel}"
                            Margin="0,0,0,10" />
 
+                    <Border Style="{StaticResource SettingsRowStyle}"
+                            Margin="0,0,0,28">
+                        <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="8">
+                            <VerticalStackLayout Grid.Column="0" Spacing="2">
+                                <Label Text="{Binding Path=[Settings_UserAgent], Source={x:Static managers:LocalizationManager.Instance}}"
+                                    Style="{StaticResource SubtitleLabel}" />
+                                <Entry Text="{Binding UserAgent}"
+                                    Style="{StaticResource SettingsEntryStyle}"
+                                    FontSize="11"
+                                    FontFamily="Consolas" />
+                            </VerticalStackLayout>
+
+                            <!-- Rotate Button -->
+                            <Button Grid.Column="1"
+                            Text="&#xe5d5;"
+                            FontFamily="MaterialIcons-Regular"
+                            Command="{Binding RotateUserAgentCommand}"
+                            Style="{StaticResource ActionButtonStyle}"
+                            FontSize="18"
+                            ToolTipProperties.Text="{Binding Path=[Settings_Rotate_UA], Source={x:Static managers:LocalizationManager.Instance}}" />
+
+                            <!-- Reset Button -->
+                            <Button Grid.Column="2"
+                            Text="&#xe042;"
+                            FontFamily="MaterialIcons-Regular"
+                            Command="{Binding ResetUserAgentCommand}"
+                            Style="{StaticResource ActionButtonStyle}"
+                            FontSize="18"
+                            ToolTipProperties.Text="{Binding Path=[Settings_Reset_UA], Source={x:Static managers:LocalizationManager.Instance}}" />
+                        </Grid>
+                    </Border>
+
                     <!-- Max concurrent fetches -->
                     <Border Style="{StaticResource SettingsRowStyle}">
                         <Grid ColumnDefinitions="*,Auto">
