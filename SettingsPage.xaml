@@ -587,7 +587,7 @@
 
                             <!-- Rotate Button -->
                             <Button Grid.Column="1"
-                            Text="&#xe5d5;"
+                            Text="&#xf1d1;"
                             FontFamily="MaterialIcons-Regular"
                             Command="{Binding RotateUserAgentCommand}"
                             Style="{StaticResource ActionButtonStyle}"
