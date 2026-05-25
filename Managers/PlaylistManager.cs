@@ -320,6 +320,13 @@ namespace MauiMixTube.Managers
             return true;
         }
 
+        public QueueEntry GetCurrentTrack()
+        {
+            if (_playQueue is null || _playingIndex < 0 || _playingIndex >= _playQueue.Count)
+                return QueueEntry.None;
+            return _playQueue[_playingIndex];
+        }   
+
         private async Task PreviewTrackAsync(QueueEntry entry, CancellationToken ct)
         {
             var info = await _fetchManager.ResolveMetadataAsync(entry, ct);

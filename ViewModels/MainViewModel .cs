@@ -52,6 +52,8 @@ namespace MauiMixTube.ViewModels
 
         [ObservableProperty] public partial string? AlbumArtUrl { get; set; }
         [ObservableProperty] public partial ObservableCollection<UserPlaylist> Playlists { get; set; } = new();
+        [ObservableProperty] public partial UserPlaylist LikedSongsPlaylists { get; set; } = new();
+        [ObservableProperty] public partial UserPlaylist RecentlyPlayedPlaylists { get; set; } = new();
         [ObservableProperty] public partial UserPlaylist? SelectedPlaylist { get; set; }
         [ObservableProperty] public partial bool IsBusy { get; set; }
         [ObservableProperty] public partial ObservableCollection<TrackDisplayItem> AlbumTracks { get; set; } = new();
@@ -102,6 +104,11 @@ namespace MauiMixTube.ViewModels
                     TotalTime = FormatTime(info.Duration);
                     Progress = 0;
 
+                    IsLiked = LikedSongsPlaylists.Sources
+                        .Any(s=>!s.IsPlaylist &&
+                                s.Url == info.Entry.Url &&
+                                s.Tag == info.Entry.Tag);
+
                     if(info.IsCurrent && AlbumTracks.Count > info.OrderNum)
                     {
                         for(int i=0;i<AlbumTracks.Count;i++)
@@ -123,8 +130,10 @@ namespace MauiMixTube.ViewModels
 
         private async Task LoadPlayListAsync()
         {
-            var playlists =  _playlistRepository.GetAll();
+            var playlists =  _playlistRepository.GetAll().Where(p => !p.IsSystemPlaylist);
             Playlists = new ObservableCollection<UserPlaylist>(playlists);
+            LikedSongsPlaylists = _playlistRepository.GetLikedSongs();
+            RecentlyPlayedPlaylists = _playlistRepository.GetRecentlyPlayed();
         }
 
         private async Task ResetAlbumTracksAndTryLoadAsync()
@@ -133,7 +142,6 @@ namespace MauiMixTube.ViewModels
             if (IsAlbumTabOpening)
                 await FetchNextPageAsync();
         }
-
 
         private async Task StartProgressLoopAsync(CancellationToken ct = default)
         {
@@ -158,7 +166,27 @@ namespace MauiMixTube.ViewModels
 
         partial void OnIsLikedChanged(bool value)
         {
+            var track = _playlistManager.GetCurrentTrack();
+
+            if (track == QueueEntry.None)
+                return;
+
+            if (value)
+            {
+                var source = new PlaylistSource
+                {
+                    IsPlaylist = false,
+                    Url = track.Url,
+                    Tag = track.Tag
+                };
+
+                LikedSongsPlaylists.Sources.Add(source);
+            }
+            else
+                LikedSongsPlaylists.Sources.RemoveAll(s=>s.Url==track.Url && s.Tag == track.Tag);
+             
             
+            _playlistRepository.Update(LikedSongsPlaylists);
         }
 
         partial void OnSelectedPlaylistChanged(UserPlaylist? value)
@@ -167,6 +195,14 @@ namespace MauiMixTube.ViewModels
 
             SelectPlaylistCommand.Execute(value);
         }
+
+
+        [RelayCommand]
+        private async Task LikedSongsTappedAsync()
+        {
+            await SelectPlaylistAsync(LikedSongsPlaylists);
+        }
+
 
         [RelayCommand]
         private async Task OpeningStatusChangedAsync()

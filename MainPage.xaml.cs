@@ -106,12 +106,6 @@ public partial class MainPage : ContentPage
         await CloseSidebarAsync();
     }
 
-    private async void OnLikedSongsTapped(object sender, TappedEventArgs e)
-    {
-        QueueLabel.Text = "PLAYING FROM — LIKED SONGS";
-        await CloseSidebarAsync();
-    }
-
     private async void OnRecentlyPlayedTapped(object sender, TappedEventArgs e)
     {
         QueueLabel.Text = "PLAYING FROM — RECENTLY PLAYED";

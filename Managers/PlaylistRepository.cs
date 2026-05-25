@@ -10,7 +10,6 @@ namespace MauiMixTube.Managers
     public partial class PlaylistRepository
     {
         private List<UserPlaylist> _playlists = new();
-        private List<LikedTrack> _liked = new();
 
         private readonly SemaphoreSlim _saveLock = new(1, 1);
         private readonly FetchManager _fetchManager;
@@ -26,30 +25,43 @@ namespace MauiMixTube.Managers
         {
             _playlists = await LoadAsync<List<UserPlaylist>>(AppPaths.PlaylistIndex)
                          ?? new();
-            _liked = await LoadAsync<List<LikedTrack>>(AppPaths.LikedFile)
-                         ?? new();
             EnsureSystemPlaylists();
         }
 
         private void EnsureSystemPlaylists()
         {
+            bool isDirty = false;
             if (!_playlists.Any(p => p.Type == PlaylistType.LikedSongs))
-                _playlists.Insert(0, new UserPlaylist
-                {
-                    Id = Guid.NewGuid().ToString(), 
-                    Name = "Liked Songs",
-                    Type = PlaylistType.LikedSongs
-                });
-
-            if (!_playlists.Any(p => p.Type == PlaylistType.RecentlyPlayed))
-                _playlists.Insert(1, new UserPlaylist
+            {
+                _playlists.Add(new UserPlaylist
                 {
                     Id = Guid.NewGuid().ToString(),
-                    Name = "Recently Played",
+                    Name = "LIKED SONGS",
+                    Type = PlaylistType.LikedSongs
+                });
+                isDirty = true;
+            }
+
+            if (!_playlists.Any(p => p.Type == PlaylistType.RecentlyPlayed))
+            {
+                _playlists.Add(new UserPlaylist
+                {
+                    Id = Guid.NewGuid().ToString(),
+                    Name = "RECENTLY PLAYED",
                     Type = PlaylistType.RecentlyPlayed
                 });
+                isDirty = true;
+            }
 
+            if (isDirty)
+                _ = SavePlaylistsAsync();
         }
+
+        public UserPlaylist GetLikedSongs()
+            => _playlists.First(p => p.Type == PlaylistType.LikedSongs);
+
+        public UserPlaylist GetRecentlyPlayed()
+            => _playlists.First(p => p.Type == PlaylistType.RecentlyPlayed);
 
         public IReadOnlyList<UserPlaylist> GetAll() => _playlists;
 
@@ -72,27 +84,6 @@ namespace MauiMixTube.Managers
             _playlists[index] = playlist;
             _ = SavePlaylistsAsync();
         }
-
-        public bool IsLiked(string normalizedUrl)
-            => _liked.Any(t => t.Url == normalizedUrl);
-
-        public async Task ToggleLikeAsync(string normalizedUrl, string title, string artist, WebTag tag)
-        {
-            if (IsLiked(normalizedUrl))
-                _liked.RemoveAll(t => t.Url == normalizedUrl);
-            else
-                _liked.Add(new LikedTrack
-                {
-                    Url = normalizedUrl,
-                    Tag = tag,
-                    Title = title,
-                    Artist = artist
-                });
-
-            await SaveLikedAsync();
-        }
-
-        public IReadOnlyList<LikedTrack> GetLiked() => _liked;
 
         private async Task<T?> LoadAsync<T>(string path)
         {
@@ -167,9 +158,6 @@ namespace MauiMixTube.Managers
 
         private Task SavePlaylistsAsync()
             => SaveAsync(_playlists, AppPaths.PlaylistIndex);
-
-        private Task SaveLikedAsync()
-            => SaveAsync(_liked, AppPaths.LikedFile);
 
         private async Task SaveAsync<T>(T data, string path)
         {
