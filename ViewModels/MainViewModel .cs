@@ -156,6 +156,11 @@ namespace MauiMixTube.ViewModels
             OpeningStatusChangedCommand.Execute(null);
         }
 
+        partial void OnIsLikedChanged(bool value)
+        {
+            
+        }
+
         partial void OnSelectedPlaylistChanged(UserPlaylist? value)
         {
             if (value == null) return;
@@ -283,7 +288,8 @@ namespace MauiMixTube.ViewModels
                 CreatedAt = DateTime.Now,
                 Sources = new List<PlaylistSource>(),
                 ThumbnailUrl = null,
-                IsActive = false
+                IsActive = false,
+                Type = PlaylistType.UserDefined
             };
             _playlistRepository.Add(newPlaylist);
             Playlists.Add(newPlaylist);

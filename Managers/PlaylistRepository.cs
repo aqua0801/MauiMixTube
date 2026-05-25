@@ -28,6 +28,27 @@ namespace MauiMixTube.Managers
                          ?? new();
             _liked = await LoadAsync<List<LikedTrack>>(AppPaths.LikedFile)
                          ?? new();
+            EnsureSystemPlaylists();
+        }
+
+        private void EnsureSystemPlaylists()
+        {
+            if (!_playlists.Any(p => p.Type == PlaylistType.LikedSongs))
+                _playlists.Insert(0, new UserPlaylist
+                {
+                    Id = Guid.NewGuid().ToString(), 
+                    Name = "Liked Songs",
+                    Type = PlaylistType.LikedSongs
+                });
+
+            if (!_playlists.Any(p => p.Type == PlaylistType.RecentlyPlayed))
+                _playlists.Insert(1, new UserPlaylist
+                {
+                    Id = Guid.NewGuid().ToString(),
+                    Name = "Recently Played",
+                    Type = PlaylistType.RecentlyPlayed
+                });
+
         }
 
         public IReadOnlyList<UserPlaylist> GetAll() => _playlists;

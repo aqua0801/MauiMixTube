@@ -9,6 +9,9 @@ namespace MauiMixTube.Models.Playlist
         public DateTime CreatedAt { get; init; } = DateTime.UtcNow;
         public bool IsActive { get; set; } = false;
 
+        public PlaylistType Type { get; set; } = PlaylistType.UserDefined;
+        public bool IsSystemPlaylist => Type != PlaylistType.UserDefined;
+
         [ObservableProperty]
         public partial string Name { get; set; } = string.Empty;
 
