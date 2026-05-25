@@ -9,6 +9,7 @@ namespace MauiMixTube.Helper
         public static string PlaylistsDir => Path.Combine(BaseDir, "Playlists");
         public static string CookieFile => Path.Combine(BaseDir, "cookies.txt");
         public static string UserAgentFile => Path.Combine(BaseDir, "user_agent.txt");
+        public static string AutoEqDir => Path.Combine(BaseDir, "autoeq.txt");
         public static string CacheDir => Path.Combine(BaseDir, "Cache");
         public static string CachedFilesDir => Path.Combine(CacheDir, "Audio");
         public static string MetaCacheDir => Path.Combine(CacheDir, "Metadata");

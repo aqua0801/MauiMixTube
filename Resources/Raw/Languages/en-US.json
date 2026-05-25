@@ -37,6 +37,12 @@
     "Settings_AudioQuality" : "Audio Quality",
     "Settings_AudioQualityDesc" : "Determines the audio bitrate used when fetching media sources.",
 
+    "Settings_Eq" : "Equalizer",
+    "Settings_AutoEq" : "Real-time Auto-EQ",
+    "Settings_AutoEqDesc" : "Automatically optimizes your audio in real-time to match the Harman Target curve.",
+    "Settings_EqDevice" : "Select Your Headphones",
+    "Settings_EqSearchPlaceholder" : "Search by brand or model (e.g., Sennheiser HD 600)...",
+
     "Settings_Processing" : "Processing",
     "Settings_LoudnessNorm" : "Loudness Normalization",
     "Settings_LoudnessNormDesc" : "Enables loudness balancing to optimize and standardize volume output across all audio sources.",

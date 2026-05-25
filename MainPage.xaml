@@ -600,7 +600,7 @@
                                    Margin="8,0" />
                         </Grid>
                         <Border.GestureRecognizers>
-                            <TapGestureRecognizer Command="{Binding LikedSongsTappedCommand}}" />
+                            <TapGestureRecognizer Command="{Binding LikedSongsTappedCommand}"/>
                         </Border.GestureRecognizers>
                     </Border>
                     <Border Style="{StaticResource PlaylistItemBorder}">

@@ -109,6 +109,7 @@
                         </Border.GestureRecognizers>
                     </Border>
 
+
                     <!-- Cache -->
                     <Border Style="{StaticResource NavItemStyle}">
                         <Border.Triggers>
@@ -423,6 +424,108 @@
                                                               Dark={StaticResource DarkPrimary}}" />
                         </Grid>
                     </Border>
+
+                    <BoxView Style="{StaticResource Separator}" Margin="0,20" />
+
+                    <Label Text="{Binding Path=[Settings_Eq], Source={x:Static managers:LocalizationManager.Instance}}"
+                           Style="{StaticResource SectionHeaderLabel}"
+                           Margin="0,0,0,10" />
+
+                    <!-- auto Eq -->
+
+                    <Border Style="{StaticResource SettingsRowStyle}">
+                        <Grid ColumnDefinitions="*,Auto">
+                            <VerticalStackLayout Grid.Column="0" Spacing="2">
+                                <Label Text="{Binding [Settings_AutoEq], Source={x:Static managers:LocalizationManager.Instance}}"
+                                    Style="{StaticResource SubtitleLabel}" />
+                                <Label Text="{Binding [Settings_AutoEqDesc], Source={x:Static managers:LocalizationManager.Instance}}"
+                                    Style="{StaticResource CaptionLabel}" />
+                            </VerticalStackLayout>
+                            <Switch Grid.Column="1"
+                                IsToggled="{Binding AutoEqEnabled}"
+                                OnColor="{AppThemeBinding Light={StaticResource LightPrimary},
+                                          Dark={StaticResource DarkPrimary}}" />
+                        </Grid>
+                    </Border>
+                    
+                    <Border Style="{StaticResource SettingsRowStyle}"
+                        IsVisible="{Binding AutoEqEnabled}"
+                        Margin="0,8,0,0">
+                        <VerticalStackLayout Spacing="12">
+                            <Label Text="{Binding [Settings_EqDevice], Source={x:Static managers:LocalizationManager.Instance}}"
+                                   Style="{StaticResource SubtitleLabel}" />
+
+                            <Border StrokeShape="RoundRectangle 12"
+                                StrokeThickness="1"
+                                Stroke="{AppThemeBinding Light={StaticResource LightDivider},
+                                         Dark={StaticResource DarkDivider}}"
+                                Padding="12,8">
+                                <Entry x:Name="EqSearchEntry"
+                                    Text="{Binding EqSearchQuery, Mode=TwoWay}"
+                                    Placeholder="{Binding [Settings_EqSearchPlaceholder], Source={x:Static managers:LocalizationManager.Instance}}" />
+                            </Border>
+
+                            <Border IsVisible="{Binding HasEqSearchResults}"
+                                StrokeShape="RoundRectangle 12"
+                                StrokeThickness="1"
+                                Stroke="{AppThemeBinding Light={StaticResource LightDivider},
+                                         Dark={StaticResource DarkDivider}}"
+                                Padding="0">
+                                <ScrollView MaximumHeightRequest="200"
+                                    VerticalScrollBarVisibility="Never">
+                                    <VerticalStackLayout BindableLayout.ItemsSource="{Binding EqSearchResults}">
+                                        <BindableLayout.ItemTemplate>
+                                            <DataTemplate x:DataType="x:String">
+                                                <Border Padding="16,12"
+                                                    BackgroundColor="Transparent"
+                                                    StrokeThickness="0">
+                                                    <Border.Triggers>
+                                                        <DataTrigger TargetType="Border"
+                                                            Binding="{Binding .}"
+                                                            Value="{Binding BindingContext.SelectedEqDevice,
+                                                             Source={RelativeSource AncestorType={x:Type ScrollView}}}">
+                                                            <Setter Property="BackgroundColor"
+                                                                    Value="{AppThemeBinding Light={StaticResource LightSidebarItemActive},
+                                                                    Dark={StaticResource DarkSidebarItemActive}}" />
+                                                        </DataTrigger>
+                                                    </Border.Triggers>
+                                                    <Label Text="{Binding .}"
+                                                        Style="{StaticResource SubtitleLabel}"
+                                                        FontSize="13" />
+                                                    <Border.GestureRecognizers>
+                                                        <TapGestureRecognizer
+                                                        Command="{Binding BindingContext.SelectEqDeviceCommand,
+                                                        Source={RelativeSource AncestorType={x:Type ScrollView}}}"
+                                                        CommandParameter="{Binding .}" />
+                                                    </Border.GestureRecognizers>
+                                                </Border>
+                                            </DataTemplate>
+                                        </BindableLayout.ItemTemplate>
+                                    </VerticalStackLayout>
+                                </ScrollView>
+                            </Border>
+
+                            <HorizontalStackLayout IsVisible="{Binding HasSelectedEqDevice}"
+                               Spacing="8">
+                                <Label Text="&#xe86c;"
+                                    FontFamily="MaterialSymbols"
+                                    FontSize="16"
+                                    VerticalOptions="Center"
+                                    TextColor="{AppThemeBinding Light={StaticResource LightPrimary}, Dark={StaticResource DarkPrimary}}" />
+
+                                <Label Text="{Binding SelectedEqDevice}"
+                                    Style="{StaticResource SubtitleLabel}"
+                                    VerticalOptions="Center" />
+                                <Button Text="&#xe5cd;"
+                                    FontFamily="MaterialSymbols"
+                                    Command="{Binding ClearEqDeviceCommand}"
+                                    Style="{StaticResource TopBarButtonStyle}"
+                                    FontSize="14" />
+                            </HorizontalStackLayout>
+
+                        </VerticalStackLayout>
+                    </Border>
+
 
                 </VerticalStackLayout>
 

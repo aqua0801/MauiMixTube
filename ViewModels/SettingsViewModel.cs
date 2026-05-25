@@ -3,6 +3,7 @@ using CommunityToolkit.Mvvm.Input;
 using MauiMixTube.Helper;
 using MauiMixTube.Managers;
 using MauiMixTube.Models.Settings;
+using System.Collections.ObjectModel;
 #if WINDOWS
 using MauiMixTube.Helper;
 using System.Diagnostics;
@@ -67,6 +68,22 @@ public partial class SettingsViewModel : ObservableObject
     [ObservableProperty] public partial double Volume { get; set; }
     [ObservableProperty] public partial FetchQuality SelectedQuality { get; set; }
     [ObservableProperty] public partial bool LoudnessNormEnabled { get; set; }
+
+    [ObservableProperty] public partial bool AutoEqEnabled { get; set; }
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(HasEqSearchResults))]
+    public partial ObservableCollection<string> EqSearchResults { get; set; } = new();
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(HasSelectedEqDevice))]
+    public partial string? SelectedEqDevice { get; set; }
+
+    [ObservableProperty] public partial string EqSearchQuery { get; set; } = string.Empty;
+
+    public bool HasEqSearchResults => EqSearchResults.Count > 0;
+    public bool HasSelectedEqDevice => SelectedEqDevice is not null;
+
     partial void OnVolumeChanged(double value)
     {
         _settingsManager.Volume = value;
@@ -81,6 +98,23 @@ public partial class SettingsViewModel : ObservableObject
     {
         _settingsManager.LoudnessNormEnabled = value;
     }
+
+    [RelayCommand]
+    private void SelectEqDevice(string device)
+    {
+        SelectedEqDevice = device;
+        EqSearchQuery = device;
+        EqSearchResults.Clear();             
+    }
+
+    [RelayCommand]
+    private void ClearEqDevice()
+    {
+        SelectedEqDevice = null;
+        EqSearchQuery = string.Empty;
+    }
+
+
 
     // Cache
     [ObservableProperty] public partial long MaxCacheSizeMb { get; set; }
