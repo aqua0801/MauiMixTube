@@ -37,6 +37,10 @@
     "Settings_AudioQuality" : "音訊品質",
     "Settings_AudioQualityDesc" : "決定抓取媒體來源時的音訊位元率",
 
+    "Settings_RecentlyPlayed" : "最近播放",
+    "Settings_RecentlyPlayedCount" : "最近播放數量",
+    "Settings_RecentlyPlayedCountDesc" : "設定最近播放最多紀錄的歌曲數量",
+
     "Settings_Eq" : "等化器",
     "Settings_AutoEq" : "動態等化器",
     "Settings_AutoEqDesc" : "即時自動優化音訊 使音效趨近哈曼目標曲線",

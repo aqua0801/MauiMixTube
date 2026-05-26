@@ -95,23 +95,6 @@ public partial class MainPage : ContentPage
         mv.IsSliderDragging = false;
     }
 
-
-    private async void OnPlaylistItemTapped(object sender, TappedEventArgs e)
-    {
-        if (e.Parameter is PlaylistItem item)
-        {
-            QueueLabel.Text = $"PLAYING FROM — {item.Name.ToUpperInvariant()}";
-            // TODO: _player.LoadPlaylist(item.Id);
-        }
-        await CloseSidebarAsync();
-    }
-
-    private async void OnRecentlyPlayedTapped(object sender, TappedEventArgs e)
-    {
-        QueueLabel.Text = "PLAYING FROM — RECENTLY PLAYED";
-        await CloseSidebarAsync();
-    }
-
     private async void OnNewPlaylistClicked(object sender, EventArgs e)
     {
         var popup = new CreatePlaylistPopup();
@@ -284,16 +267,3 @@ public partial class MainPage : ContentPage
 
 }
 
-// ── Tiny model records (swap with your domain models) ────────────────────────
-
-public record PlaylistItem(
-    string Name,
-    string SongCountText,
-    bool IsActive,
-    string ThumbnailUrl);
-
-public record TrackItem(
-    int TrackNumber,
-    string Title,
-    string ArtistName,
-    string Duration);

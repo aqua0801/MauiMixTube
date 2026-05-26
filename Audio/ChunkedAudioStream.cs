@@ -29,6 +29,7 @@ namespace MauiMixTube.Audio
         private int _currentChunkIndex;
 
         private Process? _process;
+        private bool _isProcessAlive = false;
         private FileStream? _cachedStream;
         private CancellationTokenSource _cts = new();
         private Task? _fillTask;
@@ -55,8 +56,12 @@ namespace MauiMixTube.Audio
 
         private void StartFfmpeg(double seekSeconds)
         {
-            _process?.Kill(entireProcessTree: true);
-            _process?.Dispose();
+            try
+            {
+                KillProcessSafe();
+            }
+            catch { }
+
             _process = null;
 
             var args = _info.Fetch.GetCacheArgsOrDefault(seekSeconds);
@@ -75,12 +80,27 @@ namespace MauiMixTube.Audio
                 ?? throw new InvalidOperationException(
                     $"FFmpeg failed to start : {AppPaths.FfmpegBinary}");
 
+            _isProcessAlive = true;
+
+            _process.Exited += (_,_) =>
+            {
+                _isProcessAlive = false;
+            };
+
             _process.ErrorDataReceived += (_, e) =>
             {
                 if (e.Data is not null)
                     Console.WriteLine($"[FFmpeg] {e.Data}");
             };
             _process.BeginErrorReadLine();
+        }
+
+        private void KillProcessSafe()
+        {
+            if (_isProcessAlive)
+                _process?.Kill(true);
+            _process?.Dispose();
+            _process = null;
         }
 
 
@@ -236,7 +256,6 @@ namespace MauiMixTube.Audio
         public override void SetLength(long value) => throw new NotSupportedException();
         public override void Write(byte[] buffer, int offset, int count) => throw new NotSupportedException();
 
-
         protected override void Dispose(bool disposing)
         {
             if (disposing)
@@ -250,14 +269,16 @@ namespace MauiMixTube.Audio
 
                 ClearChunks();
 
-                try { _process?.Kill(entireProcessTree: true); }
+                try 
+                {
+                    KillProcessSafe();
+                }
                 catch (InvalidOperationException) { }
                 catch (Exception ex)
                 {
                     Console.WriteLine($"[FFmpeg] Kill failed: {ex.Message}");
                 }
 
-                _process?.Dispose();
                 _cachedStream?.Dispose();
             }
 

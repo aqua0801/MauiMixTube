@@ -90,6 +90,10 @@ namespace MauiMixTube.Managers
             _isStarted = true;
             _isDirectJump = false;
             _playTask = RunPlaybackLoopAsync();
+            _playTask.ContinueWith(t => 
+            {
+                _isStarted = false;
+            });
             return true;
         }
 
@@ -218,7 +222,15 @@ namespace MauiMixTube.Managers
             _isStarted = false;
             _isDirectJump = false;
 
-            await _playTask.Safe.WaitAsync(ct);
+            var linked = CancellationTokenSource.CreateLinkedTokenSource(
+                ct,
+                new CancellationTokenSource(TimeSpan.FromSeconds(1)).Token);
+
+            try
+            {
+                await _playTask.Safe.WaitAsync(linked.Token);
+            }
+            catch { }
         }
 
         public async Task JumpToIndexAsync(int trackIndex , CancellationToken ct)

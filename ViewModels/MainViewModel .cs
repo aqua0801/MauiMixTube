@@ -96,7 +96,7 @@ namespace MauiMixTube.ViewModels
 
             _playlistManager.TrackChanged += info =>
             {
-                MainThread.BeginInvokeOnMainThread(() =>
+                MainThread.BeginInvokeOnMainThread(async () =>
                 {
                     SongTitle = info.Title;
                     Artist = info.Artist;
@@ -108,6 +108,11 @@ namespace MauiMixTube.ViewModels
                         .Any(s=>!s.IsPlaylist &&
                                 s.Url == info.Entry.Url &&
                                 s.Tag == info.Entry.Tag);
+
+                    if(IsPlaying)
+                    {
+                        await AddToRecentlyPlayedAsync(info.Entry);
+                    }
 
                     if(info.IsCurrent && AlbumTracks.Count > info.OrderNum)
                     {
@@ -159,6 +164,29 @@ namespace MauiMixTube.ViewModels
             }
         }
 
+        private async Task AddToRecentlyPlayedAsync(QueueEntry entry)
+        {
+            var existing = RecentlyPlayedPlaylists.Sources
+                .FirstOrDefault(s=>s.Url==entry.Url && s.Tag==entry.Tag);
+
+            if(existing is not null)
+                RecentlyPlayedPlaylists.Sources.Remove(existing);
+
+            RecentlyPlayedPlaylists.Sources.Insert(0, new PlaylistSource
+            {
+                Tag = entry.Tag,
+                Url = entry.Url,
+                IsPlaylist = false
+            });
+
+
+            while (RecentlyPlayedPlaylists.Sources.Count > _settingsManager.RecentlyPlayedCount)
+                RecentlyPlayedPlaylists.Sources.RemoveAt(RecentlyPlayedPlaylists.Sources.Count-1);
+
+            _playlistRepository.Update(RecentlyPlayedPlaylists);
+        }
+
+
         private void OnOpeningStatusChanged()
         {
             OpeningStatusChangedCommand.Execute(null);
@@ -196,13 +224,17 @@ namespace MauiMixTube.ViewModels
             SelectPlaylistCommand.Execute(value);
         }
 
+        [RelayCommand]
+        private async Task RecentlyPlayedTappedAsync()
+        {
+            await SelectPlaylistAsync(RecentlyPlayedPlaylists);
+        }
 
         [RelayCommand]
         private async Task LikedSongsTappedAsync()
         {
             await SelectPlaylistAsync(LikedSongsPlaylists);
         }
-
 
         [RelayCommand]
         private async Task OpeningStatusChangedAsync()
@@ -250,6 +282,10 @@ namespace MauiMixTube.ViewModels
             {
                 IsBusy = true;
                 PlayingFrom = playlist.Name;
+
+                if (IsPlaying)
+                    IsPlaying = await _playlistManager.TogglePlayPauseAsync();
+
                 await _playlistManager.LoadAsync(playlist, _loadCts.Token);
 
                 foreach (var p in Playlists)

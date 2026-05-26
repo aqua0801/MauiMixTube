@@ -31,6 +31,7 @@ public partial class SettingsViewModel : ObservableObject
         SelectedEqDevice = settingsManager.DeviceName;
         EqSearchQuery = settingsManager.DeviceName;
         EqSearchResults.Clear();
+        RecentlyPlayedCount = settingsManager.RecentlyPlayedCount;
 
         MaxCacheSizeMb = settingsManager.MaxCacheSizeMb;
         MaxConcurrentFetches = settingsManager.MaxConcorrentFetches;
@@ -74,6 +75,7 @@ public partial class SettingsViewModel : ObservableObject
     [ObservableProperty] public partial double Volume { get; set; }
     [ObservableProperty] public partial FetchQuality SelectedQuality { get; set; }
     [ObservableProperty] public partial bool LoudnessNormEnabled { get; set; }
+    [ObservableProperty] public partial int RecentlyPlayedCount { get; set; }
 
     [ObservableProperty] public partial bool AutoEqEnabled { get; set; }
 
@@ -122,6 +124,11 @@ public partial class SettingsViewModel : ObservableObject
         _settingsManager.DeviceName = value??String.Empty;
     }
 
+    partial void OnRecentlyPlayedCountChanged(int value)
+    {
+        _settingsManager.RecentlyPlayedCount = value;
+    }
+
     [RelayCommand]
     private void SelectEqDevice(string device)
     {
@@ -138,6 +145,18 @@ public partial class SettingsViewModel : ObservableObject
     {
         SelectedEqDevice = null;
         EqSearchQuery = string.Empty;
+    }
+
+    [RelayCommand]
+    private void DecrementRecentCount()
+    {
+        RecentlyPlayedCount--;
+    }
+
+    [RelayCommand]
+    private void IncrementRecentCount()
+    {
+        RecentlyPlayedCount++;
     }
 
     // Cache

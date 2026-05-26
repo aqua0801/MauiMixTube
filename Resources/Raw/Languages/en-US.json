@@ -37,6 +37,10 @@
     "Settings_AudioQuality" : "Audio Quality",
     "Settings_AudioQualityDesc" : "Determines the audio bitrate used when fetching media sources.",
 
+    "Settings_RecentlyPlayed" : "Recently Played",
+    "Settings_RecentlyPlayedCount" : "Recently Played Count",
+    "Settings_RecentlyPlayedCountDesc" : "Set the maximum number of songs to keep in your recently played list.",
+
     "Settings_Eq" : "Equalizer",
     "Settings_AutoEq" : "Real-time Auto-EQ",
     "Settings_AutoEqDesc" : "Automatically optimizes your audio in real-time to match the Harman Target curve.",

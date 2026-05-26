@@ -105,6 +105,19 @@ namespace MauiMixTube.Managers
             }
         }
 
+        public int RecentlyPlayedCount
+        {
+            get => Current.Player.RecentlyPlayedCount;
+            set 
+            {
+                if(value != Current.Player.RecentlyPlayedCount)
+                {
+                    Current.Player.RecentlyPlayedCount = value;
+                    ScheduleSave();
+                }
+            }
+        }
+
         public bool AutoEqEnabled
         {
             get => Current.Player.AutoEqEnabled;

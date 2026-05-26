@@ -617,7 +617,7 @@
                                    Margin="8,0" />
                         </Grid>
                         <Border.GestureRecognizers>
-                            <TapGestureRecognizer Tapped="OnRecentlyPlayedTapped" />
+                            <TapGestureRecognizer Command="{Binding RecentlyPlayedTappedCommand}"/>
                         </Border.GestureRecognizers>
                     </Border>
                 </VerticalStackLayout>
