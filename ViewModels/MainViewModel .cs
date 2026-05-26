@@ -2,7 +2,7 @@
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
 using MauiMixTube.Extensions;
-using MauiMixTube.Helper;
+using MauiMixTube.Helpers;
 using MauiMixTube.Managers;
 using MauiMixTube.Messages;
 using MauiMixTube.Models;

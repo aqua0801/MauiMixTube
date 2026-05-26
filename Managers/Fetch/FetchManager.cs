@@ -1,4 +1,4 @@
-﻿using MauiMixTube.Helper;
+﻿using MauiMixTube.Helpers;
 using MauiMixTube.Models;
 using MauiMixTube.Models.Fetch;
 using MauiMixTube.Models.Playlist;

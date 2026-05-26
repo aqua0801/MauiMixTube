@@ -1,4 +1,5 @@
-﻿using MauiMixTube.Helper;
+﻿using MauiMixTube.Audio.Eq;
+using MauiMixTube.Helpers;
 using MauiMixTube.Managers;
 using MauiMixTube.Managers.Fetch;
 
@@ -37,6 +38,7 @@ namespace MauiMixTube
             await fetchManager.OnStartupAsync();
             await cacheManager.InitializeAsync();
             await playlistRepository.InitializeAsync();
+            await AutoEqDatabase.LoadAsync();
 
             MainPage = new AppShell();
         }

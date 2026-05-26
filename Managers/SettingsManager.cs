@@ -26,7 +26,7 @@ namespace MauiMixTube.Managers
 
         public async Task InitializeAsync()
         {
-            var path = Helper.AppPaths.SettingsFile;
+            var path = Helpers.AppPaths.SettingsFile;
 
             if (!File.Exists(path))
             {
@@ -52,7 +52,7 @@ namespace MauiMixTube.Managers
                     SettingsJsonContext.Default.AppSettings);
 
                 await File.WriteAllTextAsync(
-                    Helper.AppPaths.SettingsFile,
+                    Helpers.AppPaths.SettingsFile,
                     json);
             }
             finally
@@ -100,6 +100,32 @@ namespace MauiMixTube.Managers
                 if (value != Current.Player.LoudnessNormEnabled)
                 {
                     Current.Player.LoudnessNormEnabled = value;
+                    ScheduleSave();
+                }
+            }
+        }
+
+        public bool AutoEqEnabled
+        {
+            get => Current.Player.AutoEqEnabled;
+            set
+            {
+                if(value != Current.Player.AutoEqEnabled)
+                {
+                    Current.Player.AutoEqEnabled = value;
+                    ScheduleSave();
+                }
+            }
+        }
+
+        public string DeviceName
+        {
+            get => Current.Player.DeviceName;
+            set
+            {
+                if(value != Current.Player.DeviceName)
+                {
+                    Current.Player.DeviceName = value;
                     ScheduleSave();
                 }
             }

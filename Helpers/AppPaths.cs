@@ -1,5 +1,5 @@
 ﻿
-namespace MauiMixTube.Helper
+namespace MauiMixTube.Helpers
 {
     public static class AppPaths
     {

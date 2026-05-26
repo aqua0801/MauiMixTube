@@ -5,7 +5,7 @@
              xmlns:vm="clr-namespace:MauiMixTube.ViewModels"
              xmlns:managers="clr-namespace:MauiMixTube.Managers"
              xmlns:converters="clr-namespace:MauiMixTube.Converters"
-             xmlns:helper="clr-namespace:MauiMixTube.Helper"
+             xmlns:helper="clr-namespace:MauiMixTube.Helpers"
              x:Class="MauiMixTube.SettingsPage"
              Shell.NavBarIsVisible="False">
 
@@ -356,77 +356,6 @@
                            Style="{StaticResource TitleLabel}"
                            Margin="0,0,0,28" />
 
-                    <Label Text="{Binding Path=[Settings_Audio], Source={x:Static managers:LocalizationManager.Instance}}"
-                           Style="{StaticResource SectionHeaderLabel}"
-                           Margin="0,0,0,10" />
-
-                    <!-- Default volume -->
-                    <Border Style="{StaticResource SettingsRowStyle}">
-                        <VerticalStackLayout Spacing="12">
-                            <Grid ColumnDefinitions="*,Auto">
-                                <Label Grid.Column="0"
-                                       Text="{Binding Path=[Settings_DefaultVolume], Source={x:Static managers:LocalizationManager.Instance}}"
-                                       Style="{StaticResource SubtitleLabel}"
-                                       VerticalOptions="Center" />
-                                <Label Grid.Column="1"
-                                       Text="{Binding Volume, StringFormat='{0:F0}%'}"
-                                       Style="{StaticResource CaptionLabel}"
-                                       VerticalOptions="Center" />
-                            </Grid>
-                            <Slider Value="{Binding Volume}"
-                                    Minimum="0"
-                                    Maximum="100" />
-                        </VerticalStackLayout>
-                    </Border>
-
-                    <BoxView Style="{StaticResource Separator}" Margin="0,20" />
-
-                    <!-- Quality -->
-                    <Label Text="{Binding Path=[Settings_Quality], Source={x:Static managers:LocalizationManager.Instance}}"
-                           Style="{StaticResource SectionHeaderLabel}"
-                           Margin="0,0,0,10" />
-
-                    <Border Style="{StaticResource SettingsRowStyle}">
-                        <Grid ColumnDefinitions="*,Auto">
-                            <VerticalStackLayout Grid.Column="0" Spacing="2">
-                                <Label Text="{Binding Path=[Settings_AudioQuality], Source={x:Static managers:LocalizationManager.Instance}}"
-                                       Style="{StaticResource SubtitleLabel}" />
-                                <Label Text="{Binding Path=[Settings_AudioQualityDesc], Source={x:Static managers:LocalizationManager.Instance}}"
-                                       Style="{StaticResource CaptionLabel}" />
-                            </VerticalStackLayout>
-                            <Picker Grid.Column="1"
-                                    ItemsSource="{Binding AvailableQualities}"
-                                    SelectedItem="{Binding SelectedQuality , Mode=TwoWay}"
-                                    WidthRequest="140"
-                                    TextColor="{AppThemeBinding Light={StaticResource LightPrimary},
-                                                                Dark={StaticResource DarkPrimary}}" />
-                        </Grid>
-                    </Border>
-
-                    <BoxView Style="{StaticResource Separator}" Margin="0,20" />
-
-                    <!-- Loudness normalization -->
-                    <Label Text="{Binding Path=[Settings_Processing], Source={x:Static managers:LocalizationManager.Instance}}"
-                           Style="{StaticResource SectionHeaderLabel}"
-                           Margin="0,0,0,10" />
-
-                    <Border Style="{StaticResource SettingsRowStyle}">
-                        <Grid ColumnDefinitions="*,Auto">
-                            <VerticalStackLayout Grid.Column="0" Spacing="2">
-                                <Label Text="{Binding Path=[Settings_LoudnessNorm], Source={x:Static managers:LocalizationManager.Instance}}"
-                                       Style="{StaticResource SubtitleLabel}" />
-                                <Label Text="{Binding Path=[Settings_LoudnessNormDesc], Source={x:Static managers:LocalizationManager.Instance}}"
-                                       Style="{StaticResource CaptionLabel}" />
-                            </VerticalStackLayout>
-                            <Switch Grid.Column="1"
-                                    IsToggled="{Binding LoudnessNormEnabled}"
-                                    OnColor="{AppThemeBinding Light={StaticResource LightPrimary},
-                                                              Dark={StaticResource DarkPrimary}}" />
-                        </Grid>
-                    </Border>
-
-                    <BoxView Style="{StaticResource Separator}" Margin="0,20" />
-
                     <Label Text="{Binding Path=[Settings_Eq], Source={x:Static managers:LocalizationManager.Instance}}"
                            Style="{StaticResource SectionHeaderLabel}"
                            Margin="0,0,0,10" />
@@ -447,7 +376,7 @@
                                           Dark={StaticResource DarkPrimary}}" />
                         </Grid>
                     </Border>
-                    
+
                     <Border Style="{StaticResource SettingsRowStyle}"
                         IsVisible="{Binding AutoEqEnabled}"
                         Margin="0,8,0,0">
@@ -494,9 +423,9 @@
                                                         FontSize="13" />
                                                     <Border.GestureRecognizers>
                                                         <TapGestureRecognizer
-                                                        Command="{Binding BindingContext.SelectEqDeviceCommand,
-                                                        Source={RelativeSource AncestorType={x:Type ScrollView}}}"
-                                                        CommandParameter="{Binding .}" />
+                                                            Command="{Binding BindingContext.SelectEqDeviceCommand,
+                                                            Source={RelativeSource AncestorType={x:Type ScrollView}}}"
+                                                            CommandParameter="{Binding .}" />
                                                     </Border.GestureRecognizers>
                                                 </Border>
                                             </DataTemplate>
@@ -508,7 +437,7 @@
                             <HorizontalStackLayout IsVisible="{Binding HasSelectedEqDevice}"
                                Spacing="8">
                                 <Label Text="&#xe86c;"
-                                    FontFamily="MaterialSymbols"
+                                    FontFamily="MaterialIcons-Regular"
                                     FontSize="16"
                                     VerticalOptions="Center"
                                     TextColor="{AppThemeBinding Light={StaticResource LightPrimary}, Dark={StaticResource DarkPrimary}}" />
@@ -517,7 +446,7 @@
                                     Style="{StaticResource SubtitleLabel}"
                                     VerticalOptions="Center" />
                                 <Button Text="&#xe5cd;"
-                                    FontFamily="MaterialSymbols"
+                                    FontFamily="MaterialIcons-Regular"
                                     Command="{Binding ClearEqDeviceCommand}"
                                     Style="{StaticResource TopBarButtonStyle}"
                                     FontSize="14" />
@@ -526,6 +455,77 @@
                         </VerticalStackLayout>
                     </Border>
 
+                    <BoxView Style="{StaticResource Separator}" Margin="0,20" />
+
+                    <Label Text="{Binding Path=[Settings_Audio], Source={x:Static managers:LocalizationManager.Instance}}"
+                           Style="{StaticResource SectionHeaderLabel}"
+                           Margin="0,0,0,10" />
+
+                    <!-- Default volume -->
+                    <Border Style="{StaticResource SettingsRowStyle}">
+                        <VerticalStackLayout Spacing="12">
+                            <Grid ColumnDefinitions="*,Auto">
+                                <Label Grid.Column="0"
+                                       Text="{Binding Path=[Settings_DefaultVolume], Source={x:Static managers:LocalizationManager.Instance}}"
+                                       Style="{StaticResource SubtitleLabel}"
+                                       VerticalOptions="Center" />
+                                <Label Grid.Column="1"
+                                       Text="{Binding Volume, StringFormat='{0:F0}%'}"
+                                       Style="{StaticResource CaptionLabel}"
+                                       VerticalOptions="Center" />
+                            </Grid>
+                            <Slider Value="{Binding Volume}"
+                                    Minimum="0"
+                                    Maximum="100" />
+                        </VerticalStackLayout>
+                    </Border>
+
+                    <BoxView Style="{StaticResource Separator}" Margin="0,20" />
+
+                    <!-- Quality -->
+                    <Label Text="{Binding Path=[Settings_Quality], Source={x:Static managers:LocalizationManager.Instance}}"
+                           Style="{StaticResource SectionHeaderLabel}"
+                           Margin="0,0,0,10" />
+
+                    <Border Style="{StaticResource SettingsRowStyle}">
+                        <Grid ColumnDefinitions="*,Auto">
+                            <VerticalStackLayout Grid.Column="0" Spacing="2">
+                                <Label Text="{Binding Path=[Settings_AudioQuality], Source={x:Static managers:LocalizationManager.Instance}}"
+                                       Style="{StaticResource SubtitleLabel}" />
+                                <Label Text="{Binding Path=[Settings_AudioQualityDesc], Source={x:Static managers:LocalizationManager.Instance}}"
+                                       Style="{StaticResource CaptionLabel}" />
+                            </VerticalStackLayout>
+                            <Picker Grid.Column="1"
+                                    ItemsSource="{Binding AvailableQualities}"
+                                    SelectedItem="{Binding SelectedQuality , Mode=TwoWay}"
+                                    ItemDisplayBinding="{Binding .}"
+                                    WidthRequest="140"
+                                    TextColor="{AppThemeBinding Light={StaticResource LightPrimary},
+                                                                Dark={StaticResource DarkPrimary}}" />
+                        </Grid>
+                    </Border>
+
+                    <BoxView Style="{StaticResource Separator}" Margin="0,20" />
+
+                    <!-- Loudness normalization -->
+                    <Label Text="{Binding Path=[Settings_Processing], Source={x:Static managers:LocalizationManager.Instance}}"
+                           Style="{StaticResource SectionHeaderLabel}"
+                           Margin="0,0,0,10" />
+
+                    <Border Style="{StaticResource SettingsRowStyle}">
+                        <Grid ColumnDefinitions="*,Auto">
+                            <VerticalStackLayout Grid.Column="0" Spacing="2">
+                                <Label Text="{Binding Path=[Settings_LoudnessNorm], Source={x:Static managers:LocalizationManager.Instance}}"
+                                       Style="{StaticResource SubtitleLabel}" />
+                                <Label Text="{Binding Path=[Settings_LoudnessNormDesc], Source={x:Static managers:LocalizationManager.Instance}}"
+                                       Style="{StaticResource CaptionLabel}" />
+                            </VerticalStackLayout>
+                            <Switch Grid.Column="1"
+                                    IsToggled="{Binding LoudnessNormEnabled}"
+                                    OnColor="{AppThemeBinding Light={StaticResource LightPrimary},
+                                                              Dark={StaticResource DarkPrimary}}" />
+                        </Grid>
+                    </Border>
 
                 </VerticalStackLayout>
 

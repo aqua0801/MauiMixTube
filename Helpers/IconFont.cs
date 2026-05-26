@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace MauiMixTube.Helper
+namespace MauiMixTube.Helpers
 {
     public static class IconFont
     {

@@ -1,7 +1,7 @@
 ﻿using AngleSharp.Common;
 using AngleSharp.Media;
 using CommunityToolkit.Mvvm.Messaging;
-using MauiMixTube.Helper;
+using MauiMixTube.Helpers;
 using MauiMixTube.Messages;
 using MauiMixTube.Models;
 using MauiMixTube.Models.Fetch;

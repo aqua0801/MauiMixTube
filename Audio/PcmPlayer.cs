@@ -1,5 +1,10 @@
-﻿using OpenTK.Audio.OpenAL;
+﻿using CommunityToolkit.Mvvm.Messaging;
+using MauiMixTube.Audio.Eq;
+using MauiMixTube.Managers;
+using MauiMixTube.Messages;
+using OpenTK.Audio.OpenAL;
 using System.Diagnostics;
+using System.Runtime.InteropServices;
 
 namespace MauiMixTube.Audio
 {
@@ -8,7 +13,9 @@ namespace MauiMixTube.Audio
         private readonly ALDevice _device;
         private readonly ALContext _context;
         private readonly int _source;
-        private readonly int[] _buffers; 
+        private readonly int[] _buffers;
+        private readonly SettingsManager _settingsManager;
+        private AutoEqProcessor? _eqProcessor;
         private const int BufferCount = 4;
         private const int BufferSamples = 4096;     
         private const int SampleRate = 48000;
@@ -19,14 +26,33 @@ namespace MauiMixTube.Audio
 
         private long _totalSamplesPlayed;
 
-        public PcmPlayer()
+        public PcmPlayer(SettingsManager settingsManager)
         {
+            _settingsManager = settingsManager;
+
+            WeakReferenceMessenger.Default.Register<EqPresetChangedMessage>(this, (r, m) =>
+            {
+                SetEqPreset(m.Preset);
+            });
+
+            if(settingsManager.AutoEqEnabled && !String.IsNullOrEmpty(settingsManager.DeviceName))
+            {
+                SetEqPreset(AutoEqDatabase.Get(settingsManager.DeviceName));
+            }
+
             _device = ALC.OpenDevice(null);
             _context = ALC.CreateContext(_device, (int[])null!);
             ALC.MakeContextCurrent(_context);
 
             _source = AL.GenSource();
             _buffers = AL.GenBuffers(BufferCount);
+        }
+
+        public void SetEqPreset(EqPreset? preset)
+        {
+            _eqProcessor = preset is not null
+                ? new AutoEqProcessor(preset, SampleRate)
+                : null;
         }
 
         public async Task StreamAsync(ChunkedAudioStream pcm, CancellationToken ct)
@@ -55,6 +81,12 @@ namespace MauiMixTube.Audio
 
                         int read = await pcm.ReadAsync(raw, 0, raw.Length, ct);
                         if (read == 0) return;
+
+                        if(_settingsManager.AutoEqEnabled && _eqProcessor is not null)
+                        {
+                            var sample = MemoryMarshal.Cast<byte, short>(raw.AsSpan(0,read));
+                            _eqProcessor.Process(sample);
+                        }
 
                         if (read < raw.Length)
                             Array.Clear(raw, read, raw.Length - read);

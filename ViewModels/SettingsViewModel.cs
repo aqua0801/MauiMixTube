@@ -1,11 +1,14 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using MauiMixTube.Helper;
+using CommunityToolkit.Mvvm.Messaging;
+using MauiMixTube.Audio.Eq;
+using MauiMixTube.Helpers;
 using MauiMixTube.Managers;
+using MauiMixTube.Messages;
 using MauiMixTube.Models.Settings;
 using System.Collections.ObjectModel;
 #if WINDOWS
-using MauiMixTube.Helper;
+using MauiMixTube.Helpers;
 using System.Diagnostics;
 #endif
 
@@ -21,10 +24,13 @@ public partial class SettingsViewModel : ObservableObject
         _cacheManager = cacheManager;
 
         SelectedLanguage = settingsManager.Language;
-        SelectedQuality = _settingsManager.FetchQuality;
         CurrentTheme = settingsManager.Theme;
         Volume = settingsManager.Volume;
         SelectedQuality = settingsManager.FetchQuality;
+        AutoEqEnabled = settingsManager.AutoEqEnabled;
+        SelectedEqDevice = settingsManager.DeviceName;
+        EqSearchQuery = settingsManager.DeviceName;
+        EqSearchResults.Clear();
 
         MaxCacheSizeMb = settingsManager.MaxCacheSizeMb;
         MaxConcurrentFetches = settingsManager.MaxConcorrentFetches;
@@ -49,8 +55,8 @@ public partial class SettingsViewModel : ObservableObject
     // General
     public IReadOnlyList<string> AvailableLanguages 
         =>  LocalizationManager.Instance.GetAvailableLanguages();
-    public IReadOnlyList<string> AvailableQualities
-        => Enum.GetNames(typeof(FetchQuality));
+    public IReadOnlyList<FetchQuality> AvailableQualities
+        => (FetchQuality[])Enum.GetValues(typeof(FetchQuality));
     [ObservableProperty] public partial string SelectedLanguage { get; set; }
     [ObservableProperty] public partial ThemeMode CurrentTheme { get; set; }
 
@@ -82,7 +88,7 @@ public partial class SettingsViewModel : ObservableObject
     [ObservableProperty] public partial string EqSearchQuery { get; set; } = string.Empty;
 
     public bool HasEqSearchResults => EqSearchResults.Count > 0;
-    public bool HasSelectedEqDevice => SelectedEqDevice is not null;
+    public bool HasSelectedEqDevice => !String.IsNullOrEmpty(SelectedEqDevice);
 
     partial void OnVolumeChanged(double value)
     {
@@ -99,12 +105,32 @@ public partial class SettingsViewModel : ObservableObject
         _settingsManager.LoudnessNormEnabled = value;
     }
 
+    partial void OnEqSearchQueryChanged(string value)
+    {
+        if (String.IsNullOrEmpty(value))
+            return;
+        EqSearchResults = new(AutoEqDatabase.Search(value));
+    }
+
+    partial void OnAutoEqEnabledChanged(bool value)
+    {
+        _settingsManager.AutoEqEnabled = value;
+    }
+
+    partial void OnSelectedEqDeviceChanged(string? value)
+    {
+        _settingsManager.DeviceName = value??String.Empty;
+    }
+
     [RelayCommand]
     private void SelectEqDevice(string device)
     {
         SelectedEqDevice = device;
         EqSearchQuery = device;
-        EqSearchResults.Clear();             
+        EqSearchResults.Clear();
+
+        var preset = AutoEqDatabase.Get(device);
+        WeakReferenceMessenger.Default.Send(new EqPresetChangedMessage(preset));
     }
 
     [RelayCommand]
@@ -113,8 +139,6 @@ public partial class SettingsViewModel : ObservableObject
         SelectedEqDevice = null;
         EqSearchQuery = string.Empty;
     }
-
-
 
     // Cache
     [ObservableProperty] public partial long MaxCacheSizeMb { get; set; }

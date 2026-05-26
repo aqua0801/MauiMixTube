@@ -1,6 +1,7 @@
 ﻿using AngleSharp.Dom;
 using CommunityToolkit.Mvvm.Messaging;
 using MauiMixTube.Audio;
+using MauiMixTube.Audio.Eq;
 using MauiMixTube.Extensions;
 using MauiMixTube.Managers.Fetch;
 using MauiMixTube.Messages;
@@ -41,7 +42,7 @@ namespace MauiMixTube.Managers
         private CancellationTokenSource _stopCts = new();
 
         private ChunkedAudioStream? _currentAudio;
-        private readonly PcmPlayer _pcmPlayer = new();
+        private readonly PcmPlayer _pcmPlayer;
       
         private int _disposeGuard;
 
@@ -50,12 +51,16 @@ namespace MauiMixTube.Managers
         public event Action<TrackDisplayItem>? TrackChanged;
         public event Action? QueueReset;
 
-        public PlaylistManager(FetchManager fetchManager , AudioPipeline audioPipeline , SettingsManager settingsManager)
+        public PlaylistManager(
+            FetchManager fetchManager , 
+            AudioPipeline audioPipeline , 
+            SettingsManager settingsManager)
         {
             _fetchManager = fetchManager;
             _audioPipeline = audioPipeline;
             _settingsManager = settingsManager;
 
+            _pcmPlayer = new(_settingsManager);
             _pcmPlayer.SetVolume((float)settingsManager.Volume / 100f);
 
             WeakReferenceMessenger.Default

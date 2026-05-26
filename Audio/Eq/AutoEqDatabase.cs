@@ -1,20 +1,18 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Text.Json;
+﻿using System.Text.Json;
+using MauiMixTube.Helpers;
 
-namespace MauiMixTube.Models.Eq
+namespace MauiMixTube.Audio.Eq
 {
     public static class AutoEqDatabase
     {
-        private static Dictionary<string, EqPreset>? _db;
+        private static Dictionary<string, EqDeviceData>? _db;
 
         public static async Task LoadAsync()
         {
             await using var stream = await FileSystem
                 .OpenAppPackageFileAsync("autoeq_database.json");
 
-            _db = await JsonSerializer.DeserializeAsync<Dictionary<string, EqPreset>>(
+            _db = await JsonSerializer.DeserializeAsync<Dictionary<string, EqDeviceData>>(
                 stream, new JsonSerializerOptions
                 {
                     PropertyNameCaseInsensitive = true
@@ -23,12 +21,15 @@ namespace MauiMixTube.Models.Eq
 
         public static IEnumerable<string> Search(string query)
             => _db?.Keys
-                .Where(k => k.Contains(query, StringComparison.OrdinalIgnoreCase))
-                .OrderBy(k => k)
+                .Select(k => (Name: k, Score: FuzzySearch.HybridScoreSimilarity(query, k)))
+                .Where(x => x.Score > 0.3)  
+                .OrderByDescending(x => x.Score)
                 .Take(10)
+                .Select(x => x.Name)
                 ?? Enumerable.Empty<string>();
 
         public static EqPreset? Get(string deviceName)
-            => _db?.TryGetValue(deviceName, out var preset) == true ? preset : null;
+            => _db?.TryGetValue(deviceName, out var data) == true ? data.Peq : null;
+        
     }
 }

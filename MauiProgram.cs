@@ -1,7 +1,8 @@
 ﻿using CommunityToolkit.Maui;
 using MauiMixTube.Audio;
+using MauiMixTube.Audio.Eq;
 using MauiMixTube.Extensions;
-using MauiMixTube.Helper;
+using MauiMixTube.Helpers;
 using MauiMixTube.Managers;
 using MauiMixTube.Managers.Fetch;
 using MauiMixTube.Managers.Fetch.Handlers;
@@ -58,6 +59,7 @@ namespace MauiMixTube
             builder.Services.AddSingleton<AudioPipeline>();
             builder.Services.AddSingleton<CacheManager>();
             builder.Services.AddSingleton<PlaylistManager>();
+            builder.Services.AddSingleton<AutoEqProcessor>();
             builder.Services.AddSingleton<PlaylistRepository>();
             builder.Services.AddSingleton<BilibiliDownloader>();
             builder.Services.AddTransient<AddSourcePopup>();

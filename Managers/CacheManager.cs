@@ -1,5 +1,5 @@
 ﻿using MauiMixTube.Audio;
-using MauiMixTube.Helper;
+using MauiMixTube.Helpers;
 using MauiMixTube.Models;
 using System.Collections.Concurrent;
 using System.Security.Cryptography;

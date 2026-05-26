@@ -3,7 +3,7 @@ using System.Diagnostics;
 using System.Net.Http.Headers;
 using System.Text;
 
-namespace MauiMixTube.Helper
+namespace MauiMixTube.Helpers
 {
     public static class MediaValidator
     {

@@ -1,5 +1,5 @@
 ﻿using CommunityToolkit.Mvvm.Messaging;
-using MauiMixTube.Helper;
+using MauiMixTube.Helpers;
 using MauiMixTube.Managers;
 using MauiMixTube.Messages;
 using System.Text.Json;
