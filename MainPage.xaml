@@ -13,6 +13,52 @@
     <ContentPage.Resources>
         <toolkit:EventToCommandBehavior x:Key="EventArgsConverter" />
         <toolkit:InvertedBoolConverter x:Key="InvertedBoolConverter" />
+
+        <DataTemplate x:Key="TrackItemTemplate"
+                      x:DataType="models:TrackDisplayItem">
+            <Grid ColumnDefinitions="32,*,Auto,32"
+                  Padding="10,8"
+                  Style="{StaticResource TrackRowStyle}">
+
+                <Grid.GestureRecognizers>
+                    <TapGestureRecognizer Command="{Binding BindingContext.PlayTrackCommand,
+                          Source={RelativeSource AncestorType={x:Type ContentPage}}}"
+                                          CommandParameter="{Binding .}" />
+                </Grid.GestureRecognizers>
+
+                <Label Grid.Column="0"
+                       Text="{Binding OrderNum}"
+                       Style="{StaticResource CaptionLabel}"
+                       VerticalOptions="Center"
+                       HorizontalOptions="Center" />
+                <VerticalStackLayout Grid.Column="1"
+                                     Spacing="2"
+                                     VerticalOptions="Center">
+                    <Label Text="{Binding Title}"
+                           Style="{StaticResource SubtitleLabel}"
+                           FontSize="13" />
+                    <Label Text="{Binding Artist}"
+                           Style="{StaticResource CaptionLabel}" />
+                </VerticalStackLayout>
+                <Label Grid.Column="2"
+                       Text="{Binding Duration}"
+                       Style="{StaticResource CaptionLabel}"
+                       VerticalOptions="Center" />
+
+                <Label Text="&#xe5d4;"
+                       FontFamily="MaterialIcons-Regular"
+                       IsVisible="{Binding IsFromFlattenedPlaylist, 
+                                                                    Converter={StaticResource InvertedBoolConverter}}"
+                       VerticalOptions="Center"
+                       HorizontalOptions="End"
+                       Grid.Column="3">
+                    <Label.Behaviors>
+                        <toolkit:TouchBehavior TouchGestureCompleted="OnTrackMoreOptionsTapped" />
+                    </Label.Behaviors>
+                </Label>
+            </Grid>
+        </DataTemplate>
+
     </ContentPage.Resources>
 
     <!-- ══════════════════════════════════════════════════════════
@@ -31,7 +77,8 @@
         <!-- Gradient vignette over the blurred art -->
         <Grid>
             <Grid.Background>
-                <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                <LinearGradientBrush StartPoint="0,0"
+                                     EndPoint="0,1">
                     <GradientStop Color="{AppThemeBinding Light=#CCF5F3FF, Dark=#EE0B0A12}"
                                   Offset="0" />
                     <GradientStop Color="{AppThemeBinding Light=#F5F3FF, Dark=#0B0A12}"
@@ -66,11 +113,12 @@
                 <!-- Search -->
                 <SearchBar x:Name="GlobalSearch"
                            Grid.Column="1"
+                           Text="{Binding GlobalSearchQuery , Mode=TwoWay , UpdateSourceEventName=PropertyChanged}"
                            Placeholder="{Binding Path=[Topbar_Search_PlaceHolder] , Source={x:Static managers:LocalizationManager.Instance}}"
                            Margin="8,0"
                            HeightRequest="40"
-                           SearchButtonPressed="OnSearchButtonPressed"
-                           TextChanged="OnSearchTextChanged" />
+                           IsSpellCheckEnabled="False"
+                           IsTextPredictionEnabled="False"/>
 
                 <!-- More / settings -->
                 <Button x:Name="BtnSettings"
@@ -106,7 +154,8 @@
                                    VerticalOptions="Center">
                                 <Label.Text>
                                     <MultiBinding StringFormat="{}{0} {1}">
-                                        <Binding Path="[Playing_From]" Source="{x:Static managers:LocalizationManager.Instance}" />
+                                        <Binding Path="[Playing_From]"
+                                                 Source="{x:Static managers:LocalizationManager.Instance}" />
 
                                         <Binding Path="PlayingFrom" />
                                     </MultiBinding>
@@ -114,15 +163,21 @@
 
                                 <Label.Triggers>
 
-                                    <DataTrigger TargetType="Label" Binding="{Binding PlayingFrom}" Value="">
-                                        <Setter Property="Text" Value="{Binding Path=[Nothing_Is_Playing] , Source={x:Static managers:LocalizationManager.Instance}}" />
+                                    <DataTrigger TargetType="Label"
+                                                 Binding="{Binding PlayingFrom}"
+                                                 Value="">
+                                        <Setter Property="Text"
+                                                Value="{Binding Path=[Nothing_Is_Playing] , Source={x:Static managers:LocalizationManager.Instance}}" />
                                     </DataTrigger>
 
-                                    <DataTrigger TargetType="Label" Binding="{Binding PlayingFrom}" Value="{x:Null}">
-                                        <Setter Property="Text" Value="{Binding Path=[Nothing_Is_Playing] , Source={x:Static managers:LocalizationManager.Instance}}" />
+                                    <DataTrigger TargetType="Label"
+                                                 Binding="{Binding PlayingFrom}"
+                                                 Value="{x:Null}">
+                                        <Setter Property="Text"
+                                                Value="{Binding Path=[Nothing_Is_Playing] , Source={x:Static managers:LocalizationManager.Instance}}" />
                                     </DataTrigger>
                                 </Label.Triggers>
-                                
+
                             </Label>
                         </HorizontalStackLayout>
                     </Border>
@@ -144,7 +199,8 @@
                             <Grid HeightRequest="80"
                                   VerticalOptions="End">
                                 <Grid.Background>
-                                    <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                                    <LinearGradientBrush StartPoint="0,0"
+                                                         EndPoint="0,1">
                                         <GradientStop Color="{DynamicResource Transparent}"
                                                       Offset="0" />
                                         <GradientStop Color="{AppThemeBinding Light=#33F5F3FF, Dark=#550B0A12}"
@@ -158,7 +214,8 @@
                     <!-- ── Title, Artist, Actions ── -->
                     <Grid ColumnDefinitions="*,Auto,Auto"
                           Margin="4,20,4,4">
-                        <VerticalStackLayout Grid.Column="0" Spacing="4">
+                        <VerticalStackLayout Grid.Column="0"
+                                             Spacing="4">
                             <Label x:Name="SongTitleLabel"
                                    Text="{Binding SongTitle}"
                                    Style="{StaticResource TitleLabel}"
@@ -178,10 +235,13 @@
                                 TextColor="{AppThemeBinding Light={StaticResource LightTextPrimary}, Dark={StaticResource DarkTextPrimary}}"
                                 Command="{Binding LikeCommand}">
                             <Button.Triggers>
-                                    <DataTrigger TargetType="Button" Binding="{Binding IsLiked}" Value="True">
-                                        <Setter Property="TextColor" Value = "{AppThemeBinding Light={StaticResource LightAccent}, Dark={StaticResource DarkAccent}}" />
-                                    </DataTrigger>
-                                </Button.Triggers>
+                                <DataTrigger TargetType="Button"
+                                             Binding="{Binding IsLiked}"
+                                             Value="True">
+                                    <Setter Property="TextColor"
+                                            Value="{AppThemeBinding Light={StaticResource LightAccent}, Dark={StaticResource DarkAccent}}" />
+                                </DataTrigger>
+                            </Button.Triggers>
                         </Button>
 
                         <!-- Add to queue -->
@@ -189,9 +249,9 @@
                                 Grid.Column="2"
                                 Text="&#xe145;"
                                 Style="{StaticResource ActionButtonStyle}"
-                                Clicked="OnAddToQueueClicked" 
+                                Clicked="OnAddToQueueClicked"
                                 FontFamily="MaterialIcons-Regular"
-                                TextColor="{AppThemeBinding Light={StaticResource LightTextPrimary}, Dark={StaticResource DarkTextPrimary}}"/>
+                                TextColor="{AppThemeBinding Light={StaticResource LightTextPrimary}, Dark={StaticResource DarkTextPrimary}}" />
                     </Grid>
 
                 </VerticalStackLayout>
@@ -212,7 +272,8 @@
                     <!-- No content here, just the visual backing -->
                 </Border>
 
-                <VerticalStackLayout Padding="0,0,0,24" Spacing="0">
+                <VerticalStackLayout Padding="0,0,0,24"
+                                     Spacing="0">
 
                     <!-- Drag handle indicator -->
                     <BoxView Style="{StaticResource ExpanderHandle}"
@@ -248,9 +309,9 @@
                                             CharacterSpacing="1.2"
                                             BackgroundColor="{DynamicResource Transparent}"
                                             TextColor="{DynamicResource Primary}"
-                                            Clicked="OnTabAlbumClicked" 
+                                            Clicked="OnTabAlbumClicked"
                                             Command="{Binding SwitchTabCommand}"
-                                            CommandParameter="Album"/>
+                                            CommandParameter="Album" />
                                     <Button x:Name="BtnTabLyrics"
                                             Grid.Column="1"
                                             Text="{Binding Path=[Lyrics_Button] , Source={x:Static managers:LocalizationManager.Instance}}"
@@ -261,7 +322,7 @@
                                             TextColor="{DynamicResource TextSecondary}"
                                             Clicked="OnTabLyricsClicked"
                                             Command="{Binding SwitchTabCommand}"
-                                            CommandParameter="Lyrics"/>
+                                            CommandParameter="Lyrics" />
 
                                     <!-- Active tab indicator line -->
                                     <BoxView x:Name="TabIndicator"
@@ -274,59 +335,15 @@
                                 </Grid>
 
                                 <ScrollView Grid.Row="1"
-                                    Scrolled="OnAlbumPanelScrolled"
-                                    x:Name="AlbumPanel"
-                                    IsVisible="{Binding ActiveTab,
+                                            Scrolled="OnAlbumPanelScrolled"
+                                            x:Name="AlbumPanel"
+                                            IsVisible="{Binding ActiveTab,
                                     Converter={converters:EnumToBoolConverter},
                                     ConverterParameter='Album'}">
                                     <VerticalStackLayout x:Name="TrackList"
-                                        BindableLayout.ItemsSource="{Binding AlbumTracks}">
+                                                         BindableLayout.ItemsSource="{Binding AlbumTracks}">
                                         <BindableLayout.ItemTemplate>
-                                            <DataTemplate
-                                                x:DataType="models:TrackDisplayItem">
-                                                <Grid ColumnDefinitions="32,*,Auto,32"
-                                                    Padding="10,8"
-                                                    Style="{StaticResource TrackRowStyle}">
-
-                                                    <Grid.GestureRecognizers>
-                                                        <TapGestureRecognizer
-                                                        Command="{Binding BindingContext.PlayTrackCommand,
-                                                                  Source={x:Reference AlbumPanel}}"
-                                                        CommandParameter="{Binding .}" />
-                                                    </Grid.GestureRecognizers>
-
-                                                    <Label Grid.Column="0"
-                                                        Text="{Binding OrderNum}"
-                                                        Style="{StaticResource CaptionLabel}"
-                                                        VerticalOptions="Center"
-                                                        HorizontalOptions="Center" />
-                                                    <VerticalStackLayout Grid.Column="1"
-                                                                        Spacing="2"
-                                                                        VerticalOptions="Center">
-                                                        <Label Text="{Binding Title}"
-                                                            Style="{StaticResource SubtitleLabel}"
-                                                            FontSize="13" />
-                                                        <Label Text="{Binding Artist}"
-                                                            Style="{StaticResource CaptionLabel}" />
-                                                    </VerticalStackLayout>
-                                                    <Label Grid.Column="2"
-                                                        Text="{Binding Duration}"
-                                                        Style="{StaticResource CaptionLabel}"
-                                                        VerticalOptions="Center" />
-
-                                                    <Label Text="&#xe5d4;"
-                                                        FontFamily="MaterialIcons-Regular"
-                                                        IsVisible="{Binding IsFromFlattenedPlaylist, 
-                                                                    Converter={StaticResource InvertedBoolConverter}}"
-                                                        VerticalOptions="Center"
-                                                        HorizontalOptions="End"
-                                                        Grid.Column="3">
-                                                        <Label.Behaviors>
-                                                            <toolkit:TouchBehavior TouchGestureCompleted="OnTrackMoreOptionsTapped" />
-                                                        </Label.Behaviors>
-                                                    </Label>
-                                                </Grid>
-                                            </DataTemplate>
+                                            <StaticResource Key="TrackItemTemplate" />
                                         </BindableLayout.ItemTemplate>
                                     </VerticalStackLayout>
                                 </ScrollView>
@@ -345,12 +362,24 @@
                                            Padding="8,0" />
                                 </ScrollView>
 
+                                <ScrollView IsVisible="{Binding ActiveTab,
+                                            Converter={converters:EnumToBoolConverter},
+                                            ConverterParameter='Search'}"
+                                            Grid.Row="1">
+                                    <VerticalStackLayout BindableLayout.ItemsSource="{Binding FilteredAlbumTracks}">
+                                        <BindableLayout.ItemTemplate>
+                                            <StaticResource Key="TrackItemTemplate" />
+                                        </BindableLayout.ItemTemplate>
+                                    </VerticalStackLayout>
+                                </ScrollView>
+
                             </Grid>
                         </toolkit:Expander.Content>
 
                         <!-- ─── HEADER: Progress + Playback Controls ─── -->
                         <toolkit:Expander.Header>
-                            <VerticalStackLayout Padding="20,0" Spacing="0">
+                            <VerticalStackLayout Padding="20,0"
+                                                 Spacing="0">
 
                                 <!-- Progress bar + time stamps -->
                                 <Grid ColumnDefinitions="*"
@@ -363,7 +392,8 @@
                                             DragCompleted="OnSliderDragCompleted">
                                     </Slider>
                                 </Grid>
-                                <Grid ColumnDefinitions="*,*" Margin="4,-4,4,8">
+                                <Grid ColumnDefinitions="*,*"
+                                      Margin="4,-4,4,8">
                                     <Label x:Name="CurrentTimeLabel"
                                            Grid.Column="0"
                                            Text="{Binding CurrentTime}"
@@ -383,46 +413,47 @@
 
                                     <!-- ── Volume slider ── -->
                                     <Grid ColumnDefinitions="Auto,*,Auto"
-                                        Margin="4,12,4,0">
+                                          Margin="4,12,4,0">
                                         <Label Grid.Column="0"
-                                            Text="&#xE04D;"
-                                            FontFamily="MaterialIcons-Regular"
-                                            FontSize="14"
-                                            TextColor="{DynamicResource TextSecondary}"
-                                            VerticalOptions="Center" />
+                                               Text="&#xE04D;"
+                                               FontFamily="MaterialIcons-Regular"
+                                               FontSize="14"
+                                               TextColor="{DynamicResource TextSecondary}"
+                                               VerticalOptions="Center" />
                                         <Slider x:Name="VolumeSlider"
-                                            Grid.Column="1"
-                                            Minimum="0"
-                                            Maximum="100"
-                                            Value="{Binding Volume, Mode=TwoWay}"
-                                            Margin="8,0"
-                                            VerticalOptions="Center"
-                                            MinimumTrackColor="#7F56D9" 
-                                            MaximumTrackColor="#E4E7EC"
-                                            ThumbColor="#7F56D9"/>
+                                                Grid.Column="1"
+                                                Minimum="0"
+                                                Maximum="100"
+                                                Value="{Binding Volume, Mode=TwoWay}"
+                                                Margin="8,0"
+                                                VerticalOptions="Center"
+                                                MinimumTrackColor="#7F56D9"
+                                                MaximumTrackColor="#E4E7EC"
+                                                ThumbColor="#7F56D9" />
                                         <Label Grid.Column="2"
-                                           Text="&#xe050;"
-                                           FontFamily="MaterialIcons-Regular"
-                                           FontSize="14"
-                                           TextColor="{DynamicResource TextSecondary}"
-                                           VerticalOptions="Center" />
+                                               Text="&#xe050;"
+                                               FontFamily="MaterialIcons-Regular"
+                                               FontSize="14"
+                                               TextColor="{DynamicResource TextSecondary}"
+                                               VerticalOptions="Center" />
                                     </Grid>
 
                                     <!-- Shuffle -->
-        
+
                                     <Button Grid.Column="1"
-                                        Text="&#xe043;"
-                                        FontFamily="MaterialIcons-Regular"
-                                        Style="{StaticResource ToggleButtonStyle}"
-                                        HorizontalOptions="End"
-                                        Command="{Binding ShuffleCommand}"
-                                        TextColor="{AppThemeBinding Light={StaticResource LightTextPrimary}, Dark={StaticResource DarkTextPrimary}}">
+                                            Text="&#xe043;"
+                                            FontFamily="MaterialIcons-Regular"
+                                            Style="{StaticResource ToggleButtonStyle}"
+                                            HorizontalOptions="End"
+                                            Command="{Binding ShuffleCommand}"
+                                            TextColor="{AppThemeBinding Light={StaticResource LightTextPrimary}, Dark={StaticResource DarkTextPrimary}}">
 
                                         <Button.Triggers>
                                             <DataTrigger TargetType="Button"
-                                                Binding="{Binding ShuffleOn}"
-                                                    Value="True">
-                                                <Setter Property="TextColor" Value = "{AppThemeBinding Light={StaticResource LightAccent}, Dark={StaticResource DarkAccent}}" />
+                                                         Binding="{Binding ShuffleOn}"
+                                                         Value="True">
+                                                <Setter Property="TextColor"
+                                                        Value="{AppThemeBinding Light={StaticResource LightAccent}, Dark={StaticResource DarkAccent}}" />
                                             </DataTrigger>
                                         </Button.Triggers>
                                     </Button>
@@ -432,7 +463,7 @@
                                             Text="&#xe045;"
                                             FontFamily="MaterialIcons-Regular"
                                             Style="{StaticResource TransportButtonStyle}"
-                                            Command="{Binding PreviousCommand}"/>
+                                            Command="{Binding PreviousCommand}" />
 
                                     <!-- Play / Pause (primary large button) -->
                                     <Button x:Name="BtnPlayPause"
@@ -441,7 +472,7 @@
                                             Command="{Binding PlayPauseCommand}"
                                             FontFamily="MaterialIcons-Regular"
                                             Style="{StaticResource PlayButtonStyle}"
-                                            VerticalOptions="Center"/>
+                                            VerticalOptions="Center" />
 
                                     <!-- Next -->
                                     <Button Grid.Column="6"
@@ -452,16 +483,18 @@
 
                                     <!-- Repeat -->
                                     <Button Grid.Column="7"
-                                        Text="{Binding RepeatIcon}"
-                                        FontFamily="MaterialIcons-Regular"
-                                        Style="{StaticResource ToggleButtonStyle}"
-                                        HorizontalOptions="Start"
-                                        Command="{Binding RepeatCommand}"
-                                        TextColor="{AppThemeBinding Light={StaticResource LightTextPrimary}, Dark={StaticResource DarkTextPrimary}}">
+                                            Text="{Binding RepeatIcon}"
+                                            FontFamily="MaterialIcons-Regular"
+                                            Style="{StaticResource ToggleButtonStyle}"
+                                            HorizontalOptions="Start"
+                                            Command="{Binding RepeatCommand}"
+                                            TextColor="{AppThemeBinding Light={StaticResource LightTextPrimary}, Dark={StaticResource DarkTextPrimary}}">
                                         <Button.Triggers>
                                             <DataTrigger TargetType="Button"
-                                                Binding="{Binding IsRepeatActive}" Value="True">
-                                                <Setter Property="TextColor" Value = "{AppThemeBinding Light={StaticResource LightAccent}, Dark={StaticResource DarkAccent}}" />
+                                                         Binding="{Binding IsRepeatActive}"
+                                                         Value="True">
+                                                <Setter Property="TextColor"
+                                                        Value="{AppThemeBinding Light={StaticResource LightAccent}, Dark={StaticResource DarkAccent}}" />
                                             </DataTrigger>
                                         </Button.Triggers>
                                     </Button>
@@ -528,31 +561,35 @@
                 <Grid Grid.Row="0"
                       ColumnDefinitions="*,36"
                       Margin="0,0,0,20">
-                    <VerticalStackLayout Grid.Column="0" Spacing="2">
+                    <VerticalStackLayout Grid.Column="0"
+                                         Spacing="2">
                         <Label Text="{Binding Path=[Sidebar_Library], Source={x:Static managers:LocalizationManager.Instance}}"
                                Style="{StaticResource SectionHeaderLabel}" />
                         <Label x:Name="LibraryCountLabel"
                                FontAttributes="Bold">
                             <Label.Style>
-                                <Style TargetType="Label" BasedOn="{StaticResource CaptionLabel}">
+                                <Style TargetType="Label"
+                                       BasedOn="{StaticResource CaptionLabel}">
                                     <Setter Property="Text">
                                         <Setter.Value>
                                             <MultiBinding StringFormat="{}{0} {1}">
-                                                <Binding Path="Playlists.Count" />
-                                                <Binding Path="[Sidebar_Playlists]" Source="{x:Static managers:LocalizationManager.Instance}" />
+                                                <Binding Path="FilteredPlaylists.Count" />
+                                                <Binding Path="[Sidebar_Playlists]"
+                                                         Source="{x:Static managers:LocalizationManager.Instance}" />
                                             </MultiBinding>
                                         </Setter.Value>
                                     </Setter>
 
                                     <Style.Triggers>
-                                        <DataTrigger TargetType="Label" 
-                                            Binding="{Binding Playlists.Count}" 
-                                            Value="1">
+                                        <DataTrigger TargetType="Label"
+                                                     Binding="{Binding FilteredPlaylists.Count}"
+                                                     Value="1">
                                             <Setter Property="Text">
                                                 <Setter.Value>
                                                     <MultiBinding StringFormat="{}{0} {1}">
-                                                        <Binding Path="Playlists.Count" />
-                                                        <Binding Path="[Sidebar_Playlist]" Source="{x:Static managers:LocalizationManager.Instance}" />
+                                                        <Binding Path="FilteredPlaylists.Count" />
+                                                        <Binding Path="[Sidebar_Playlist]"
+                                                                 Source="{x:Static managers:LocalizationManager.Instance}" />
                                                     </MultiBinding>
                                                 </Setter.Value>
                                             </Setter>
@@ -574,10 +611,12 @@
                 <!-- ── Sidebar search ── -->
                 <SearchBar Grid.Row="1"
                            x:Name="SidebarSearch"
+                           Text="{Binding SidebarSearchQuery , Mode=TwoWay , UpdateSourceEventName=PropertyChanged}"
                            Placeholder="{Binding Path=[Sidebar_Search_PlaceHolder] , Source={x:Static managers:LocalizationManager.Instance}}"
                            HeightRequest="40"
                            Margin="0,0,0,16"
-                           TextChanged="OnSidebarSearchChanged" />
+                           IsSpellCheckEnabled="False"
+                           IsTextPredictionEnabled="False" />
 
                 <!-- ── Pinned items (quick links) ── -->
                 <VerticalStackLayout Grid.Row="2"
@@ -588,7 +627,8 @@
                            Margin="4,0,0,6" />
                     <Border Style="{StaticResource PlaylistItemBorder}">
                         <Grid ColumnDefinitions="28,*">
-                            <Label Grid.Column="0" Text="&#xe87d;"
+                            <Label Grid.Column="0"
+                                   Text="&#xe87d;"
                                    FontFamily="MaterialIcons-Regular"
                                    TextColor="{DynamicResource Accent}"
                                    FontSize="16"
@@ -600,12 +640,12 @@
                                    Margin="8,0" />
                         </Grid>
                         <Border.GestureRecognizers>
-                            <TapGestureRecognizer Command="{Binding LikedSongsTappedCommand}"/>
+                            <TapGestureRecognizer Command="{Binding LikedSongsTappedCommand}" />
                         </Border.GestureRecognizers>
                     </Border>
                     <Border Style="{StaticResource PlaylistItemBorder}">
                         <Grid ColumnDefinitions="28,*">
-                            <Label Grid.Column="0" 
+                            <Label Grid.Column="0"
                                    Text="&#xe192;"
                                    FontFamily="MaterialIcons-Regular"
                                    FontSize="16"
@@ -617,7 +657,7 @@
                                    Margin="8,0" />
                         </Grid>
                         <Border.GestureRecognizers>
-                            <TapGestureRecognizer Command="{Binding RecentlyPlayedTappedCommand}"/>
+                            <TapGestureRecognizer Command="{Binding RecentlyPlayedTappedCommand}" />
                         </Border.GestureRecognizers>
                     </Border>
                 </VerticalStackLayout>
@@ -633,53 +673,56 @@
                         <Label Text="{Binding Path=[Playlists] , Source={x:Static managers:LocalizationManager.Instance}}"
                                Style="{StaticResource SectionHeaderLabel}"
                                Margin="4,8,0,8" />
-                        <CollectionView ItemsSource="{Binding Playlists}"
-                                SelectionMode="Single"
-                                SelectedItem="{Binding SelectedPlaylist, Mode=TwoWay}"
-                                x:Name="PlaylistCollection">
+                        <CollectionView ItemsSource="{Binding FilteredPlaylists}"
+                                        SelectionMode="Single"
+                                        SelectedItem="{Binding SelectedPlaylist, Mode=TwoWay}"
+                                        x:Name="PlaylistCollection">
 
                             <CollectionView.ItemsLayout>
-                                <LinearItemsLayout Orientation="Vertical" ItemSpacing="8" />
+                                <LinearItemsLayout Orientation="Vertical"
+                                                   ItemSpacing="8" />
                             </CollectionView.ItemsLayout>
 
                             <CollectionView.ItemTemplate>
                                 <DataTemplate x:DataType="playlists:UserPlaylist">
-                                    <Border Style="{StaticResource PlaylistItemBorder}" x:Name="ItemContainer">
+                                    <Border Style="{StaticResource PlaylistItemBorder}"
+                                            x:Name="ItemContainer">
 
-                                        <Grid ColumnDefinitions="44,*,Auto,Auto" Padding="0,0,10,0">
+                                        <Grid ColumnDefinitions="44,*,Auto,Auto"
+                                              Padding="0,0,10,0">
                                             <Border Grid.Column="0"
-                                                StrokeThickness="0"
-                                                StrokeShape="RoundRectangle 8"
-                                                HeightRequest="40"
-                                                WidthRequest="40">
+                                                    StrokeThickness="0"
+                                                    StrokeShape="RoundRectangle 8"
+                                                    HeightRequest="40"
+                                                    WidthRequest="40">
                                                 <Image Source="{Binding ThumbnailUrl}"
-                                                    Aspect="AspectFill" />
+                                                       Aspect="AspectFill" />
                                             </Border>
                                             <VerticalStackLayout Grid.Column="1"
-                                                Spacing="2"
-                                                VerticalOptions="Center"
-                                                Margin="10,0">
+                                                                 Spacing="2"
+                                                                 VerticalOptions="Center"
+                                                                 Margin="10,0">
                                                 <Label Text="{Binding Name}"
-                                                    Style="{StaticResource SubtitleLabel}" />
+                                                       Style="{StaticResource SubtitleLabel}" />
                                                 <Label Text="{Binding SongCountText}"
-                                                    Style="{StaticResource CaptionLabel}" />
+                                                       Style="{StaticResource CaptionLabel}" />
                                             </VerticalStackLayout>
                                             <Ellipse Grid.Column="2"
-                                                Fill="{AppThemeBinding Light={StaticResource LightPrimary},
-                                                Dark={StaticResource DarkPrimary}}"
-                                                WidthRequest="8"
-                                                HeightRequest="8"
-                                                VerticalOptions="Center"
-                                                IsVisible="{Binding IsActive}" />
+                                                     Fill="{AppThemeBinding Light={StaticResource LightPrimary},
+                                                            Dark={StaticResource DarkPrimary}}"
+                                                     WidthRequest="8"
+                                                     HeightRequest="8"
+                                                     VerticalOptions="Center"
+                                                     IsVisible="{Binding IsActive}" />
 
                                             <Label Grid.Column="3"
-                                                Text="&#xe5d4;" 
-                                                FontFamily="MaterialIcons-Regular"
-                                                FontSize="24"
-                                                VerticalOptions="Center"
-                                                HorizontalOptions="Center"
-                                                TextColor="{AppThemeBinding Light={StaticResource LightPrimary}, Dark={StaticResource DarkPrimary}}"
-                                                Padding="10">
+                                                   Text="&#xe5d4;"
+                                                   FontFamily="MaterialIcons-Regular"
+                                                   FontSize="24"
+                                                   VerticalOptions="Center"
+                                                   HorizontalOptions="Center"
+                                                   TextColor="{AppThemeBinding Light={StaticResource LightPrimary}, Dark={StaticResource DarkPrimary}}"
+                                                   Padding="10">
                                                 <Label.Behaviors>
                                                     <toolkit:TouchBehavior TouchGestureCompleted="OnMoreOptionsTapped" />
                                                 </Label.Behaviors>

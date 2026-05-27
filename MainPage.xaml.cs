@@ -75,11 +75,6 @@ public partial class MainPage : ContentPage
         SidebarDimmer.IsVisible = false;
     }
 
-    private void OnSidebarSearchChanged(object sender, TextChangedEventArgs e)
-    {
-        // TODO: filter PlaylistCollection.ItemsSource by e.NewTextValue
-    }
-
     // Slider
     private void OnSliderDragStarted(object sender , EventArgs e)
     {
@@ -203,17 +198,6 @@ public partial class MainPage : ContentPage
     // ════════════════════════════════════════════════════════════════════════
     //  SEARCH
     // ════════════════════════════════════════════════════════════════════════
-
-    private void OnSearchTextChanged(object sender, TextChangedEventArgs e)
-    {
-        // Live search: throttle with a CancellationTokenSource if needed
-        // TODO: ViewModel.SearchAsync(e.NewTextValue);
-    }
-
-    private void OnSearchButtonPressed(object sender, EventArgs e)
-    {
-        // TODO: ViewModel.SearchAsync(GlobalSearch.Text);
-    }
 
     private async void OnAddToQueueClicked(object sender, EventArgs e)
     {

@@ -52,6 +52,8 @@ namespace MauiMixTube.ViewModels
 
         [ObservableProperty] public partial string? AlbumArtUrl { get; set; }
         [ObservableProperty] public partial ObservableCollection<UserPlaylist> Playlists { get; set; } = new();
+        [ObservableProperty] public partial ObservableCollection<UserPlaylist> FilteredPlaylists { get; set; } = new();
+
         [ObservableProperty] public partial UserPlaylist LikedSongsPlaylists { get; set; } = new();
         [ObservableProperty] public partial UserPlaylist RecentlyPlayedPlaylists { get; set; } = new();
         [ObservableProperty] public partial UserPlaylist? SelectedPlaylist { get; set; }
@@ -61,17 +63,24 @@ namespace MauiMixTube.ViewModels
         [ObservableProperty]
         [NotifyPropertyChangedFor(nameof(IsAlbumTabOpening))]
         [NotifyPropertyChangedFor(nameof(IsLyricsTabOpening))]
+        [NotifyPropertyChangedFor(nameof(IsSearchTabOpening))]
         public partial BottomPanelTab ActiveTab { get; set; } = BottomPanelTab.None;
 
         [ObservableProperty]
         [NotifyPropertyChangedFor(nameof(IsAlbumTabOpening))]
         [NotifyPropertyChangedFor(nameof(IsLyricsTabOpening))]
+        [NotifyPropertyChangedFor(nameof(IsSearchTabOpening))]
         public partial bool IsBottomExpanderExpanded { get; set; }
+        public ObservableCollection<TrackDisplayItem> FilteredAlbumTracks { get; } = new();
 
         public bool IsFetchingTracks;
 
         public bool IsAlbumTabOpening => ActiveTab == BottomPanelTab.Album && IsBottomExpanderExpanded;
         public bool IsLyricsTabOpening => ActiveTab == BottomPanelTab.Lyrics && IsBottomExpanderExpanded;
+        public bool IsSearchTabOpening => ActiveTab == BottomPanelTab.Search && IsBottomExpanderExpanded;
+
+        [ObservableProperty] public partial string GlobalSearchQuery { get; set; } = String.Empty;
+        [ObservableProperty] public partial string SidebarSearchQuery { get; set; } = String.Empty;
 
         partial void OnActiveTabChanged(BottomPanelTab value) => OnOpeningStatusChanged();
         partial void OnIsBottomExpanderExpandedChanged(bool value) => OnOpeningStatusChanged();
@@ -137,6 +146,7 @@ namespace MauiMixTube.ViewModels
         {
             var playlists =  _playlistRepository.GetAll().Where(p => !p.IsSystemPlaylist);
             Playlists = new ObservableCollection<UserPlaylist>(playlists);
+            FilteredPlaylists = new ObservableCollection<UserPlaylist>(playlists);
             LikedSongsPlaylists = _playlistRepository.GetLikedSongs();
             RecentlyPlayedPlaylists = _playlistRepository.GetRecentlyPlayed();
         }
@@ -222,6 +232,57 @@ namespace MauiMixTube.ViewModels
             if (value == null) return;
 
             SelectPlaylistCommand.Execute(value);
+        }
+
+        partial void OnGlobalSearchQueryChanged(string value)
+        {
+            ActiveTab = String.IsNullOrWhiteSpace(value)?
+                BottomPanelTab.None : BottomPanelTab.Search;
+
+            if(ActiveTab != BottomPanelTab.Search)
+            {
+                IsBottomExpanderExpanded = false;
+                FilteredAlbumTracks.Clear();
+                return;
+            }
+
+            IsBottomExpanderExpanded = true;
+
+            var results = AlbumTracks.Select(t => 
+                    (Score : Math.Max(FuzzySearch.HybridScoreSimilarity(value, t.Title) ,
+                              FuzzySearch.HybridScoreSimilarity(value, t.Artist)) ,
+                     Track : t))
+                    .Where(t=>t.Score > 0.5)
+                    .OrderByDescending(t=>t.Score)
+                    .Select(t=>t.Track)
+                    .ToList();
+
+            FilteredAlbumTracks.Clear();
+            foreach (var result in results)
+                FilteredAlbumTracks.Add(result);
+        }
+
+        partial void OnSidebarSearchQueryChanged(string value)
+        {
+            if (String.IsNullOrWhiteSpace(value))
+            {
+                FilteredPlaylists.Clear();
+                foreach(var playlist in Playlists)
+                    FilteredPlaylists.Add(playlist);
+                return;
+            }
+
+            var results = Playlists.Select(p => (
+                 Score : FuzzySearch.HybridScoreSimilarity(value , p.Name),
+                 Playlists : p))
+                .Where(p=>p.Score > 0.5)
+                .OrderByDescending(p=>p.Score)
+                .Select(p=>p.Playlists)
+                .ToList();
+
+            FilteredPlaylists.Clear();
+            foreach(var result in results)
+                FilteredPlaylists.Add(result);
         }
 
         [RelayCommand]

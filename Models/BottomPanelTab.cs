@@ -4,5 +4,5 @@ using System.Text;
 
 namespace MauiMixTube.Models
 {
-    public enum BottomPanelTab { None , Album, Lyrics }
+    public enum BottomPanelTab { None , Album, Lyrics, Search }
 }
