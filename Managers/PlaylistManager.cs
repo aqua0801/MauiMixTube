@@ -86,7 +86,6 @@ namespace MauiMixTube.Managers
             if (_playQueue == null || _playQueue.Count == 0)
                 return false;
 
-            _playingIndex = 0;
             _isStarted = true;
             _isDirectJump = false;
             _playTask = RunPlaybackLoopAsync();
