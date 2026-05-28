@@ -209,6 +209,11 @@ namespace MauiMixTube.ViewModels
             if (track == QueueEntry.None)
                 return;
 
+            if (LikedSongsPlaylists.Sources
+                .Any(s => s.Url == track.Url &&
+                        s.Tag == track.Tag))
+                return;
+
             if (value)
             {
                 var source = new PlaylistSource
