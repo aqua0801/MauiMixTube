@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="MauiMixTube.Views.LoadingPage"
+             Shell.NavBarIsVisible="False">
+
+    <Grid>
+        <Grid>
+            <Grid.Background>
+                <LinearGradientBrush StartPoint="0,0"
+                                     EndPoint="0,1">
+                    <GradientStop Color="{AppThemeBinding Light=#F5F3FF, Dark=#0B0A12}"
+                                  Offset="0" />
+                    <GradientStop Color="{AppThemeBinding Light=#F5F3FF, Dark=#0B0A12}"
+                                  Offset="1" />
+                </LinearGradientBrush>
+            </Grid.Background>
+        </Grid>
+
+        <VerticalStackLayout HorizontalOptions="Center"
+                             VerticalOptions="Center"
+                             Spacing="32">
+
+            <Label Text="&#xe030;"
+                   FontFamily="MaterialIcons-Regular"
+                   FontSize="72"
+                   HorizontalOptions="Center"
+                   TextColor="{AppThemeBinding Light={StaticResource LightPrimary}, 
+                                               Dark={StaticResource DarkPrimary}}">
+            </Label>
+
+            <Label Text="MauiMixTube"
+                   Style="{StaticResource TitleLabel}"
+                   FontSize="28"
+                   HorizontalOptions="Center" />
+
+            <Label x:Name="StatusLabel"
+                   Text="Initializing..."
+                   Style="{StaticResource CaptionLabel}"
+                   HorizontalOptions="Center" />
+
+            <ActivityIndicator IsRunning="True"
+                               HorizontalOptions="Center"
+                               WidthRequest="32"
+                               HeightRequest="32"
+                               Color="{AppThemeBinding Light={StaticResource LightPrimary},
+                                                       Dark={StaticResource DarkPrimary}}" />
+        </VerticalStackLayout>
+    </Grid>
+</ContentPage>
