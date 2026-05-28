@@ -80,11 +80,11 @@
         <Setter Property="Padding" Value="0" />
         <Setter Property="Shadow">
             <Setter.Value>
-                <Shadow Offset="0,4" Radius="20" Opacity="0.6">
-                    <Shadow.Brush>
-                        <AppThemeBinding Light="{StaticResource GlowColor}"
-                                         Dark="{StaticResource GlowColorDark}" />
-                    </Shadow.Brush>
+                <Shadow Offset="0,4"
+                        Radius="20"
+                        Opacity="0.6"
+                        Brush="{AppThemeBinding Light={StaticResource GlowColor}, 
+                                                Dark={StaticResource GlowColorDark}}">
                 </Shadow>
             </Setter.Value>
         </Setter>
@@ -149,11 +149,11 @@
         <Setter Property="StrokeShape" Value="RoundRectangle 20" />
         <Setter Property="Shadow">
             <Setter.Value>
-                <Shadow Offset="0,8" Radius="32" Opacity="0.25">
-                    <Shadow.Brush>
-                        <AppThemeBinding Light="{StaticResource GlowColor}"
-                                         Dark="{StaticResource GlowColorDark}" />
-                    </Shadow.Brush>
+                <Shadow Offset="0,8"
+                        Radius="32"
+                        Opacity="0.25"
+                        Brush="{AppThemeBinding Light={StaticResource GlowColor},
+                                                Dark={StaticResource GlowColorDark}}">
                 </Shadow>
             </Setter.Value>
         </Setter>
