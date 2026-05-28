@@ -8,7 +8,6 @@ using MauiMixTube.Messages;
 using MauiMixTube.Models.Settings;
 using System.Collections.ObjectModel;
 #if WINDOWS
-using MauiMixTube.Helpers;
 using System.Diagnostics;
 #endif
 

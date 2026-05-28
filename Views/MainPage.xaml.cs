@@ -7,8 +7,6 @@ using MauiMixTube.Models;
 using MauiMixTube.Models.Playlist;
 using MauiMixTube.ViewModels;
 using MauiMixTube.Views.Popups;
-using System.Diagnostics;
-using YoutubeExplode.Playlists;
 
 namespace MauiMixTube;
 

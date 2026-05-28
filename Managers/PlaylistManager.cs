@@ -1,7 +1,6 @@
 ﻿using AngleSharp.Dom;
 using CommunityToolkit.Mvvm.Messaging;
 using MauiMixTube.Audio;
-using MauiMixTube.Audio.Eq;
 using MauiMixTube.Extensions;
 using MauiMixTube.Managers.Fetch;
 using MauiMixTube.Messages;
