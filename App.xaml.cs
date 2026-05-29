@@ -2,6 +2,7 @@
 using MauiMixTube.Helpers;
 using MauiMixTube.Managers;
 using MauiMixTube.Managers.Fetch;
+using MauiMixTube.Views;
 
 namespace MauiMixTube
 {
@@ -15,10 +16,6 @@ namespace MauiMixTube
         {
             InitializeComponent();
 
-            //MainPage = new LoadingPage(); i dont have loading page yet, so just set main page after settings manager is initialized
-            //Todo
-            MainPage = new ContentPage();
-
             _ = InitializeAsync(
                 settingsManager,
                 fetchManager,
@@ -26,6 +23,8 @@ namespace MauiMixTube
                 playlistRepository);
         }
 
+        protected override Window CreateWindow(IActivationState? activationState)
+            => new Window(new LoadingPage());
 
         private async Task InitializeAsync(
             SettingsManager settingsManager , 
@@ -40,7 +39,10 @@ namespace MauiMixTube
             await playlistRepository.InitializeAsync();
             await AutoEqDatabase.LoadAsync();
 
-            MainPage = new AppShell();
+            await Task.Delay(1000);
+
+            MainThread.BeginInvokeOnMainThread(() =>
+                Windows[0].Page = new AppShell());
         }
     }
 }

@@ -33,11 +33,12 @@ namespace MauiMixTube.Managers
                 Console.WriteLine("[Settings] Settings file does not exist. Attempting to build one.");
                 _current = new AppSettings();
                 await SaveAsync(_current);
-                return;
             }
 
             using var stream = File.OpenRead(path);
             _current = await JsonSerializer.DeserializeAsync(stream, SettingsJsonContext.Default.AppSettings) ?? new AppSettings();
+            Application.Current.UserAppTheme = Current.General.Theme.ToAppTheme();
+
             await LocalizationManager.Instance.LoadLanguageAsync(Current.General.Language);
         }
 

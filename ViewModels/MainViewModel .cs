@@ -99,7 +99,7 @@ namespace MauiMixTube.ViewModels
             _settingsManager = settingsManager;
             _playlistManager = playlistManager;
             _playlistRepository = playlistRepository;
-            Application.Current.UserAppTheme = _settingsManager.Current.General.Theme.ToAppTheme();
+
             _ = StartProgressLoopAsync();
             _ = LoadPlayListAsync();
 
