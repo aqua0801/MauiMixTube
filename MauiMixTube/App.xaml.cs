@@ -1,7 +1,9 @@
-﻿using MauiMixTube.Audio.Eq;
+﻿using CommunityToolkit.Mvvm.Messaging;
+using MauiMixTube.Audio.Eq;
 using MauiMixTube.Helpers;
 using MauiMixTube.Managers;
 using MauiMixTube.Managers.Fetch;
+using MauiMixTube.Messages;
 using MauiMixTube.Views;
 
 namespace MauiMixTube
@@ -32,17 +34,37 @@ namespace MauiMixTube
             CacheManager cacheManager,
             PlaylistRepository playlistRepository)
         {
+            SendStatusAndProgress("Ensuring Directories...",0.1);
             await AppPaths.EnsureDirectories();
+            SendStatusAndProgress("Initializing Settings...",0.4);
             await settingsManager.InitializeAsync();
+            SendStatusAndProgress(LocalizationManager.Instance["Loading_Initializing_Fetch_Module"],0.6);
             await fetchManager.OnStartupAsync();
+            SendStatusAndProgress(LocalizationManager.Instance["Loading_Initializing_Cache_Module"],0.7);
             await cacheManager.InitializeAsync();
+            SendStatusAndProgress(LocalizationManager.Instance["Loading_Initializing_Playlist_Module"],0.8);
             await playlistRepository.InitializeAsync();
+            SendStatusAndProgress(LocalizationManager.Instance["Loading_Initializing_Eq_Module"],0.9);
             await AutoEqDatabase.LoadAsync();
 
-            await Task.Delay(1000);
+            SendStatusAndProgress(LocalizationManager.Instance["Loading_Starting_Main_Page"],1);
 
-            MainThread.BeginInvokeOnMainThread(() =>
-                Windows[0].Page = new AppShell());
+            MainThread.BeginInvokeOnMainThread(async () =>
+            {
+                await Windows[0].Page.FadeToAsync(0, 400, Easing.CubicIn);
+
+                var appShell = new AppShell();
+                appShell.Opacity = 0;
+                Windows[0].Page = appShell;
+
+                await appShell.FadeToAsync(1, 300, Easing.CubicOut);
+            });
+        }
+
+        private void SendStatusAndProgress(string status , double progress)
+        {
+            WeakReferenceMessenger.Default.Send(new LoadingStatusMessage(status));
+            WeakReferenceMessenger.Default.Send(new LoadingProgressMessage(progress));
         }
     }
 }

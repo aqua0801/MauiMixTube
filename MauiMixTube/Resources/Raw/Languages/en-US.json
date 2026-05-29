@@ -1,4 +1,10 @@
 {
+    "Loading_Initializing_Fetch_Module":"Initializing Fetch Module...",
+    "Loading_Initializing_Cache_Module":"Initializing Cache Module...",
+    "Loading_Initializing_Playlist_Module":"Initializing Playlist Module...",
+    "Loading_Initializing_Eq_Module":"Initializing Equalizer Module...",
+    "Loading_Starting_Main_Page":"Starting Main Page...",
+
     "Sidebar_Playlist" : "playlist",
     "Sidebar_Playlists" : "playlists",
     "Sidebar_Library" : "LIBRARY",

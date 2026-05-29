@@ -1,4 +1,10 @@
 {
+    "Loading_Initializing_Fetch_Module":"正在初始化抓取模塊...",
+    "Loading_Initializing_Cache_Module":"正在初始化快取模塊...",
+    "Loading_Initializing_Playlist_Module":"正在初始化歌單播放模塊...",
+    "Loading_Initializing_Eq_Module":"正在初始化等化器模塊...",
+    "Loading_Starting_Main_Page":"正在載入主畫面...",
+
     "Sidebar_Playlist" : "個歌單",
     "Sidebar_Playlists" : "個歌單",
     "Sidebar_Library" : "播放清單庫",

@@ -45,6 +45,13 @@
                                HeightRequest="32"
                                Color="{AppThemeBinding Light={StaticResource LightPrimary},
                                                        Dark={StaticResource DarkPrimary}}" />
+
+            <ProgressBar x:Name="LoadingProgress"
+                         Progress="0"
+                         WidthRequest="200"
+                         ProgressColor="{AppThemeBinding 
+                        Light={StaticResource LightPrimary},
+                        Dark={StaticResource DarkPrimary}}" />
         </VerticalStackLayout>
     </Grid>
 </ContentPage>
