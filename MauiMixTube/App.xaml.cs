@@ -1,4 +1,6 @@
-﻿using CommunityToolkit.Mvvm.Messaging;
+﻿using CommunityToolkit.Maui.Alerts;
+using CommunityToolkit.Maui.Core;
+using CommunityToolkit.Mvvm.Messaging;
 using MauiMixTube.Audio.Eq;
 using MauiMixTube.Helpers;
 using MauiMixTube.Managers;
@@ -17,6 +19,12 @@ namespace MauiMixTube
             PlaylistRepository playlistRepository)
         {
             InitializeComponent();
+
+            WeakReferenceMessenger.Default.Register<ToastMessage>(this,async (r,m) =>
+            {
+                var toast = Toast.Make(m.Text, ToastDuration.Short, 14);
+                await toast.Show();
+            });
 
             _ = InitializeAsync(
                 settingsManager,

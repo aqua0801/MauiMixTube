@@ -5,10 +5,5 @@ using System.Text;
 
 namespace MauiMixTube.Messages
 {
-    public class ToastMessage : ValueChangedMessage<string>
-    {
-        public ToastMessage(string value) : base(value)
-        {
-        }
-    }
+    public record ToastMessage(string Text);
 }

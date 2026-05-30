@@ -140,11 +140,17 @@ namespace MauiMixTube.ViewModels
                     await ResetAlbumTracksAndTryLoadAsync();
                 });
             };
+
+            WeakReferenceMessenger.Default.Send(new ToastMessage("Successfully loaded !"));
         }
 
         private async Task LoadPlayListAsync()
         {
             var playlists =  _playlistRepository.GetAll().Where(p => !p.IsSystemPlaylist);
+
+            foreach (var playlist in playlists)
+                playlist.IsActive = false;
+
             Playlists = new ObservableCollection<UserPlaylist>(playlists);
             FilteredPlaylists = new ObservableCollection<UserPlaylist>(playlists);
             LikedSongsPlaylists = _playlistRepository.GetLikedSongs();

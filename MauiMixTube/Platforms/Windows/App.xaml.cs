@@ -1,4 +1,5 @@
 ﻿using Microsoft.UI.Xaml;
+using Microsoft.Windows.AppNotifications;
 
 // To learn more about WinUI, the WinUI project structure,
 // and more about our project templates, see: http://aka.ms/winui-project-info.
@@ -17,9 +18,20 @@ namespace MauiMixTube.WinUI
         public App()
         {
             this.InitializeComponent();
+
+            AppDomain.CurrentDomain.ProcessExit += (_, _) =>
+            {
+                AppNotificationManager.Default.Unregister();
+            };
         }
 
         protected override MauiApp CreateMauiApp() => MauiProgram.CreateMauiApp();
+
+        protected override void OnLaunched(Microsoft.UI.Xaml.LaunchActivatedEventArgs args)
+        {
+            base.OnLaunched(args);
+            AppNotificationManager.Default.Register();
+        }
     }
 
 }
