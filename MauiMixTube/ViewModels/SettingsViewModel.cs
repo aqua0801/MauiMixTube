@@ -207,6 +207,11 @@ public partial class SettingsViewModel : ObservableObject
         }
     }
 
+    public bool IsDesktopPlatform =>
+        RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ||
+        RuntimeInformation.IsOSPlatform(OSPlatform.OSX) ||
+        RuntimeInformation.IsOSPlatform(OSPlatform.Linux);
+
     [RelayCommand]
     private async Task OpenCacheDirAsync()
     {

@@ -671,7 +671,7 @@
                     <!-- Open cache directory -->
                     <Border Style="{StaticResource SettingsRowStyle}"
                             Margin="0,8,0,0"
-                            IsVisible="{OnPlatform Default=False, WinUI=True}" >
+                            IsVisible="{Binding IsDesktopPlatform}" >
                         <Grid ColumnDefinitions="*,Auto">
 
                             <VerticalStackLayout Grid.Column="0" Spacing="2">
