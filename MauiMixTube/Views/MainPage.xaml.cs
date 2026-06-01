@@ -1,6 +1,7 @@
 ﻿using CommunityToolkit.Maui.Extensions;
 using CommunityToolkit.Mvvm.Messaging;
 using MauiMixTube.Extensions;
+using MauiMixTube.Managers;
 using MauiMixTube.Managers.Fetch;
 using MauiMixTube.Messages;
 using MauiMixTube.Models;
@@ -102,22 +103,39 @@ public partial class MainPage : ContentPage
     private async void OnMoreOptionsTapped(object sender, EventArgs e)
     {
         var playlist = (sender as View)?.BindingContext as UserPlaylist ?? null;
+        if (BindingContext is not MainViewModel vm) return;
+
         if (playlist is null) return;
 
-        var action = await Shell.Current.DisplayActionSheetAsync(
-                    playlist.Name,      
-                    "Cancel",           
-                    "Delete Playlist",  
-                    "Rename");
+        var rename = LocalizationManager.Instance["Action_Rename"];
+        var cancel = LocalizationManager.Instance["Action_Cancel"];
+        var import = LocalizationManager.Instance["Action_Import"];
+        var export = LocalizationManager.Instance["Action_Export"];
+        var delete = LocalizationManager.Instance["Action_Delete"];
 
-        switch (action)
+        var action = await Shell.Current.DisplayActionSheetAsync(
+                    playlist.Name,
+                    rename,
+                    cancel,
+                    import,
+                    export,
+                    delete);
+
+        if (action == import)
         {
-            case "Rename":
-                await RenameAsync(playlist);
-                break;
-            case "Delete Playlist":
-                await DeleteAsync(playlist);
-                break;
+            vm.HandleImportPlaylist(playlist);
+        }
+        else if (action == export)
+        {
+            vm.HandleExportPlaylist(playlist);
+        }
+        else if (action == rename)
+        {
+            await RenameAsync(playlist);
+        }
+        else if (action == delete)
+        {
+            await DeleteAsync(playlist);
         }
     }
 

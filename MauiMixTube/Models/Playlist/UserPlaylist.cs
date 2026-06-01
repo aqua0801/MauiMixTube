@@ -17,5 +17,18 @@ namespace MauiMixTube.Models.Playlist
 
         [ObservableProperty]
         public partial string? ThumbnailUrl { get; set; }
+
+        public UserPlaylist RebuildWithDifferentId()
+        {
+            return new()
+            {
+                Sources = Sources,
+                CreatedAt = CreatedAt,
+                IsActive =IsActive,
+                Type = Type,
+                Name = Name,
+                ThumbnailUrl = ThumbnailUrl
+            };
+        }
     }
 }

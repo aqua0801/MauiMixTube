@@ -16,6 +16,18 @@
     "Playlist":"歌單",
     "Playlists":"歌單",
 
+    "Action_Rename":"重新命名",
+    "Action_Cancel":"取消",
+    "Action_Import":"導入",
+    "Action_Export":"匯出",
+    "Action_Delete":"刪除",
+
+    "Import_AsNew":"導入為新歌單",
+    "Import_MergeExisting":"合併現有歌單",
+    "Import_Title":"選擇導入方式",
+    "Import_Success":"導入成功 !",
+    "Import_Failed":"導入失敗 !",
+
     "Album_Button":"曲目",
     "Lyrics_Button":"歌詞",
 

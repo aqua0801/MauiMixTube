@@ -16,6 +16,18 @@
     "Playlist":"Playlist",
     "Playlists":"Playlists",
 
+    "Action_Rename":"Rename",
+    "Action_Cancel":"Cancel",
+    "Action_Import":"Import",
+    "Action_Export":"Export",
+    "Action_Delete":"Delete",
+
+    "Import_AsNew":"As New Playlist",
+    "Import_MergeExisting":"Merge Existing Playlist",
+    "Import_Title":"Select Import Method",
+    "Import_Success":"Successfully imported !",
+    "Import_Failed":"Failed to import !",
+
     "Album_Button":"ALBUM",
     "Lyrics_Button":"LYRICS",
 

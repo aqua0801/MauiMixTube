@@ -1,13 +1,16 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
+﻿using CommunityToolkit.Maui.Storage;
+using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
-using MauiMixTube.Extensions;
 using MauiMixTube.Helpers;
 using MauiMixTube.Managers;
 using MauiMixTube.Messages;
 using MauiMixTube.Models;
 using MauiMixTube.Models.Playlist;
 using System.Collections.ObjectModel;
+using System.Text;
+using System.Text.Json;
+using static MauiMixTube.Managers.PlaylistRepository;
 
 namespace MauiMixTube.ViewModels
 {
@@ -141,7 +144,10 @@ namespace MauiMixTube.ViewModels
                 });
             };
 
-            WeakReferenceMessenger.Default.Send(new ToastMessage("Successfully loaded !"));
+            Playlists.CollectionChanged += (s, e) =>
+            {
+                OnSidebarSearchQueryChanged(SidebarSearchQuery);
+            };
         }
 
         private async Task LoadPlayListAsync()
@@ -201,7 +207,6 @@ namespace MauiMixTube.ViewModels
 
             _playlistRepository.Update(RecentlyPlayedPlaylists);
         }
-
 
         private void OnOpeningStatusChanged()
         {
@@ -435,8 +440,27 @@ namespace MauiMixTube.ViewModels
                 IsActive = false,
                 Type = PlaylistType.UserDefined
             };
-            _playlistRepository.Add(newPlaylist);
-            Playlists.Add(newPlaylist);
+            AddNewPlaylist(newPlaylist);
+        }
+
+        private async void AddNewPlaylist(UserPlaylist playlist)
+        {
+            _playlistRepository.Add(playlist);
+            Playlists.Add(playlist);
+        }
+
+        private async void MergePlaylist(UserPlaylist targetPlaylist , UserPlaylist sourcePlaylist)
+        {
+            var existing = targetPlaylist.Sources
+            .Select(s => (s.Url, s.Tag))
+            .ToHashSet();
+
+            var toMerge = sourcePlaylist.Sources
+                .Where(s => !existing.Contains((s.Url, s.Tag)))
+                .ToList();
+
+            targetPlaylist.Sources.AddRange(toMerge);
+            _playlistRepository.Update(targetPlaylist);
         }
 
         public async void HandleNewSource(PlaylistSource source)
@@ -507,6 +531,76 @@ namespace MauiMixTube.ViewModels
                 {
                     AlbumTracks[i].OrderNum--;
                 }
+            }
+        }
+
+        public async void HandleImportPlaylist(UserPlaylist targetPlaylist)
+        {
+            var result = await FilePicker.PickAsync(new()
+            {
+                PickerTitle = LocalizationManager.Instance[""],
+                FileTypes = FilePickerTypes.Playlist
+            });
+
+            if (result is null)
+                return;
+
+            try
+            {
+                await using var stream = await result.OpenReadAsync();
+                var imported = await JsonSerializer.DeserializeAsync(
+                    stream, PlaylistJsonContext.Default.UserPlaylist);
+
+                if (imported is null) return;
+
+                var asNew = LocalizationManager.Instance["Import_AsNew"];
+                var toMerge = LocalizationManager.Instance["Import_MergeExisting"];
+
+                var action = await Shell.Current.DisplayActionSheetAsync(
+                    LocalizationManager.Instance["Import_Title"],
+                    LocalizationManager.Instance["Action_Cancel"],
+                    null,
+                    asNew,
+                    toMerge);
+
+                if (action == asNew)
+                {
+                    if (Playlists.Any(p => p.Id == imported.Id))
+                        imported = imported.RebuildWithDifferentId();
+                    AddNewPlaylist(imported);
+                }
+                else if (action == toMerge)
+                {
+                    MergePlaylist(targetPlaylist, imported);
+                }
+                else
+                    return;
+
+                WeakReferenceMessenger.Default.Send(new ToastMessage(
+                    LocalizationManager.Instance["Import_Success"]));
+            }
+            catch (Exception ex) 
+            {
+                Console.WriteLine($"[Import] Failed: {ex.Message}");
+                WeakReferenceMessenger.Default.Send(new ToastMessage(
+                        LocalizationManager.Instance["Import_Failed"]));
+            }
+        }
+
+        public async void HandleExportPlaylist(UserPlaylist playlist)
+        {
+            var json = JsonSerializer.Serialize(playlist,PlaylistJsonContext.Default.UserPlaylist);
+            var path = await FileSaver.SaveAsync(
+                $"{playlist.Name}.json",
+                new MemoryStream(Encoding.UTF8.GetBytes(json)),
+                CancellationToken.None
+                );
+
+            if(path.IsSuccessful)
+            {
+                WeakReferenceMessenger.Default
+                    .Send(new ToastMessage(LocalizationManager.Instance["Export_Success"]));
+                SystemFileExplorer.Open(path.FilePath);
             }
         }
 

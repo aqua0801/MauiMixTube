@@ -7,9 +7,9 @@ using MauiMixTube.Managers;
 using MauiMixTube.Messages;
 using MauiMixTube.Models.Settings;
 using System.Collections.ObjectModel;
-#if WINDOWS
+using System.Runtime.InteropServices;
 using System.Diagnostics;
-#endif
+
 
 namespace MauiMixTube.ViewModels;
 
@@ -210,14 +210,9 @@ public partial class SettingsViewModel : ObservableObject
     [RelayCommand]
     private async Task OpenCacheDirAsync()
     {
-#if WINDOWS
-    Process.Start(new ProcessStartInfo
-    {
-        FileName        = "explorer.exe",
-        Arguments       = $"\"{AppPaths.BaseDir}\"", 
-        UseShellExecute = false
-    });
-#endif
+        string path = AppPaths.BaseDir;
+
+        SystemFileExplorer.Open(path);
     }
 
     // Fetch
