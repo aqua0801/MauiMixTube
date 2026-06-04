@@ -1,10 +1,6 @@
-﻿using MauiMixTube.Managers.Media;
-using MauiMixTube.Models;
-using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using MauiMixTube.Models;
 
-namespace MauiMixTube.Managers.Media;
+namespace MauiMixTube.Managers.Media
 {
     public class MediaControlsService : IMediaControlsService
     {
