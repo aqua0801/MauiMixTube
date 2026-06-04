@@ -5,6 +5,7 @@ using MauiMixTube.Audio.Eq;
 using MauiMixTube.Helpers;
 using MauiMixTube.Managers;
 using MauiMixTube.Managers.Fetch;
+using MauiMixTube.Managers.Media;
 using MauiMixTube.Messages;
 using MauiMixTube.Views;
 
@@ -16,7 +17,8 @@ namespace MauiMixTube
             SettingsManager settingsManager , 
             FetchManager fetchManager ,
             CacheManager cacheManager,
-            PlaylistRepository playlistRepository)
+            PlaylistRepository playlistRepository ,
+            IMediaControlsService mediaControls)
         {
             InitializeComponent();
 
@@ -30,7 +32,8 @@ namespace MauiMixTube
                 settingsManager,
                 fetchManager,
                 cacheManager,
-                playlistRepository);
+                playlistRepository,
+                mediaControls);
         }
 
         protected override Window CreateWindow(IActivationState? activationState)
@@ -40,20 +43,23 @@ namespace MauiMixTube
             SettingsManager settingsManager , 
             FetchManager fetchManager ,
             CacheManager cacheManager,
-            PlaylistRepository playlistRepository)
+            PlaylistRepository playlistRepository,
+            IMediaControlsService mediaControls)
         {
             SendStatusAndProgress("Ensuring Directories...",0.1);
             await AppPaths.EnsureDirectories();
             SendStatusAndProgress("Initializing Settings...",0.4);
             await settingsManager.InitializeAsync();
-            SendStatusAndProgress(LocalizationManager.Instance["Loading_Initializing_Fetch_Module"],0.6);
+            SendStatusAndProgress(LocalizationManager.Instance["Loading_Initializing_Fetch_Module"],0.5);
             await fetchManager.OnStartupAsync();
-            SendStatusAndProgress(LocalizationManager.Instance["Loading_Initializing_Cache_Module"],0.7);
+            SendStatusAndProgress(LocalizationManager.Instance["Loading_Initializing_Cache_Module"],0.6);
             await cacheManager.InitializeAsync();
-            SendStatusAndProgress(LocalizationManager.Instance["Loading_Initializing_Playlist_Module"],0.8);
+            SendStatusAndProgress(LocalizationManager.Instance["Loading_Initializing_Playlist_Module"],0.7);
             await playlistRepository.InitializeAsync();
-            SendStatusAndProgress(LocalizationManager.Instance["Loading_Initializing_Eq_Module"],0.9);
+            SendStatusAndProgress(LocalizationManager.Instance["Loading_Initializing_Eq_Module"],0.8);
             await AutoEqDatabase.LoadAsync();
+            SendStatusAndProgress(LocalizationManager.Instance["Loading_Initializing_Media_Controls"], 0.9);
+            mediaControls.Initialize();
 
             SendStatusAndProgress(LocalizationManager.Instance["Loading_Starting_Main_Page"],1);
 

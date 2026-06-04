@@ -3,6 +3,7 @@ using CommunityToolkit.Mvvm.Messaging;
 using MauiMixTube.Audio;
 using MauiMixTube.Extensions;
 using MauiMixTube.Managers.Fetch;
+using MauiMixTube.Managers.Media;
 using MauiMixTube.Messages;
 using MauiMixTube.Models;
 using MauiMixTube.Models.Playlist;
@@ -16,6 +17,7 @@ namespace MauiMixTube.Managers
         private readonly FetchManager _fetchManager;
         private readonly AudioPipeline _audioPipeline;
         private readonly SettingsManager _settingsManager;
+        private readonly IMediaControlsService _mediaControls;
 
         private int _fetchPageIndex = 0;
         private readonly SemaphoreSlim _fetchPageLock = new(1,1);
@@ -33,6 +35,34 @@ namespace MauiMixTube.Managers
         private volatile bool _shuffle;
         private volatile bool _isStarted;
         private volatile bool _isDirectJump;
+
+        private bool IsPaused
+        {
+            get => _isPaused;
+            set
+            {
+                if (_isPaused != value)
+                {
+                    _isPaused = value;
+                    _mediaControls.SetPlaybackStatus(IsPlaying);
+                }
+            }
+        }
+
+        private bool IsStarted
+        {
+            get => _isStarted;
+            set
+            {
+                if (_isStarted != value)
+                {
+                    _isStarted = value;
+                    _mediaControls.SetPlaybackStatus(IsPlaying);
+                }
+            }
+        }
+
+        private bool IsPlaying => IsStarted && !IsPaused;
 
         private RepeatMode _repeatMode = RepeatMode.PlayOnce;
         private int _playingIndex;
@@ -53,11 +83,13 @@ namespace MauiMixTube.Managers
         public PlaylistManager(
             FetchManager fetchManager , 
             AudioPipeline audioPipeline , 
-            SettingsManager settingsManager)
+            SettingsManager settingsManager,
+            IMediaControlsService mediaControls)
         {
             _fetchManager = fetchManager;
             _audioPipeline = audioPipeline;
             _settingsManager = settingsManager;
+            _mediaControls = mediaControls;
 
             _pcmPlayer = new(_settingsManager);
             _pcmPlayer.SetVolume((float)settingsManager.Volume / 100f);
@@ -65,6 +97,19 @@ namespace MauiMixTube.Managers
             WeakReferenceMessenger.Default
                 .Register<VolumeChangedMessage>(this, (r, m) =>
                     _pcmPlayer?.SetVolume((float)m.Value / 100f));
+
+
+            WeakReferenceMessenger.Default
+                .Register<MediaKeyMessage>(this, (r, m) =>
+                {
+                    switch (m.Key)
+                    {
+                        case MediaKey.PlayPause: _ = TogglePlayPauseAsync(); break;
+                        case MediaKey.Next: Skip(); break;
+                        case MediaKey.Previous: Previous(); break;
+                    }
+                });
+
         }
 
         public async Task EnqueueAsync(QueueEntry entry , CancellationToken ct)
@@ -85,19 +130,19 @@ namespace MauiMixTube.Managers
             if (_playQueue == null || _playQueue.Count == 0)
                 return false;
 
-            _isStarted = true;
+            IsStarted = true;
             _isDirectJump = false;
             _playTask = RunPlaybackLoopAsync();
             _playTask.ContinueWith(t => 
             {
-                _isStarted = false;
+                IsStarted = false;
             });
             return true;
         }
 
         public async Task LoadAsync(UserPlaylist playlist, CancellationToken ct)
         {
-            if (_isStarted)
+            if (IsStarted)
                 await StopAsync(ct);
 
             _originalQueue.Clear();
@@ -141,7 +186,7 @@ namespace MauiMixTube.Managers
             await _startLock.WaitAsync();
             try
             {
-                if (!_isStarted)
+                if (!IsStarted)
                     Start();
                 else
                     TogglePause();
@@ -150,7 +195,7 @@ namespace MauiMixTube.Managers
             {
                 _startLock.Release();
             }
-            return !_isPaused && _isStarted;
+            return IsPlaying;
         }
         public void Skip()
         {
@@ -186,7 +231,7 @@ namespace MauiMixTube.Managers
 
                 if (_shuffle)
                 {
-                    ShufflePlaylist(_isStarted);
+                    ShufflePlaylist(IsStarted);
                 }
                 else
                     DisableShuffle();
@@ -217,7 +262,7 @@ namespace MauiMixTube.Managers
             _currentAudio?.Dispose();
             _fetchPageIndex = 0;
             _playingIndex = 0;
-            _isStarted = false;
+            IsStarted = false;
             _isDirectJump = false;
 
             var linked = CancellationTokenSource.CreateLinkedTokenSource(
@@ -239,7 +284,7 @@ namespace MauiMixTube.Managers
             _isDirectJump = true;
            
 
-            if(!_isStarted || _isPaused)
+            if(!IsPlaying)
                 await InvokeTrackChangedEventAsync(ct);
             else
                 Skip();
@@ -356,7 +401,9 @@ namespace MauiMixTube.Managers
             => InvokeTrackChangeEvent(await ResolveAudioInfoAsync(_playingIndex<_playQueue.Count?_playQueue[_playingIndex] : QueueEntry.None , ct));
         private void InvokeTrackChangeEvent(AudioInfo? info)
         {
-            if(info is null)
+            _mediaControls.UpdateNowPlaying(info);
+
+            if (info is null)
             {
                 this.TrackChanged?.Invoke(new TrackDisplayItem()
                 {
@@ -476,7 +523,7 @@ namespace MauiMixTube.Managers
 
         private void TogglePause()
         {
-            if (_isPaused)
+            if (IsPaused)
             {
                 _pcmPlayer?.Resume();
             }
@@ -484,7 +531,7 @@ namespace MauiMixTube.Managers
             {
                 _pcmPlayer?.Pause();
             }
-            _isPaused = !_isPaused;
+            IsPaused = !IsPaused;
         }
 
         private void ShufflePlaylist(bool respectCurrentTrack)

@@ -7,11 +7,11 @@ using MauiMixTube.Managers;
 using MauiMixTube.Managers.Fetch;
 using MauiMixTube.Managers.Fetch.Handlers;
 using MauiMixTube.Managers.Fetch.Services;
+using MauiMixTube.Managers.Media;
 using MauiMixTube.Models.Fetch;
 using MauiMixTube.Models.Settings;
 using MauiMixTube.ViewModels;
 using MauiMixTube.Views.Popups;
-using Microsoft.Extensions.Http;
 using Microsoft.Extensions.Logging;
 using YoutubeDLSharp;
 
@@ -40,6 +40,7 @@ namespace MauiMixTube
 
             builder.Logging.AddDebug();
 #endif
+
             //page
             builder.Services.AddSingleton<SettingsManager>();
             builder.Services.AddTransient<MainPage>();
@@ -63,6 +64,8 @@ namespace MauiMixTube
             builder.Services.AddSingleton<PlaylistRepository>();
             builder.Services.AddSingleton<BilibiliDownloader>();
             builder.Services.AddTransient<AddSourcePopup>();
+
+            builder.Services.AddSingleton<IMediaControlsService, MediaControlsService>();
 
             Routing.RegisterRoute("settings", typeof(SettingsPage));
 
