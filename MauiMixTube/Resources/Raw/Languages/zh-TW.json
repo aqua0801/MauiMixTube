@@ -23,6 +23,9 @@
     "Action_Export":"匯出",
     "Action_Delete":"刪除",
 
+    "Options_DeleteFromPlaylist" : "從歌單中刪除",
+    "Options_RemoveFromQueue" : "從歌曲列隊中移除",
+
     "Import_AsNew":"導入為新歌單",
     "Import_MergeExisting":"合併現有歌單",
     "Import_Title":"選擇導入方式",
@@ -48,6 +51,10 @@
     "Settings_Language" : "語言",
     "Settings_Appearance" : "外觀",
     "Settings_Theme" : "主題",
+
+    "Settings_Theme_Light":"淺色",
+    "Settings_Theme_Dark":"深色",
+    "Settings_Theme_System":"系統",
 
     "Settings_Audio" : "音效",
     "Settings_DefaultVolume" : "預設音量",
@@ -96,6 +103,18 @@
     "Settings_MaxRetryDesc" : "單次抓取服務最多嘗試次數 超過則放棄",
 
     "Settings_SourceCode" : "開源程式碼",
-    "Settings_Licenses" : "開源授權"
+    "Settings_Licenses" : "開源授權",
 
+    "Popup_AddSource_Title" : "新增來源",
+    "Popup_AddSource_Url_PlaceHolder" : "在此處貼上連結...",
+    "Popup_AddSource_Platform" : "平台",
+    "Popup_AddSource_Type" : "類型",
+    "Popup_AddSource_Single" : "單曲",
+    "Popup_AddSource_Playlist" : "歌單",
+    "Popup_AddSource_Add" : "加入",
+
+    "Popup_CreatePlaylist_Title" : "新建歌單",
+    "Popup_CreatePlaylist_NamePlaceholder" : "輸入歌單名稱...",
+    "Popup_CreatePlaylist_Cancel" : "取消",
+    "Popup_CreatePlaylist_Create" : "建立"
 }

@@ -43,6 +43,11 @@ public partial class SettingsViewModel : ObservableObject
         CacheUsageRatio = _cacheManager.UsageRatio;
         MaxCacheSizeMb = cacheManager.MaxSizeBytes / 1024 / 1024;
         UserAgent = settingsManager.UserAgent;
+
+        LocalizationManager.Instance.PropertyChanged += (s, e) =>
+        {
+            OnCurrentThemeChanged(CurrentTheme);
+        };
     }
 
     public LocalizationManager Localization => LocalizationManager.Instance;
@@ -59,6 +64,7 @@ public partial class SettingsViewModel : ObservableObject
         => (FetchQuality[])Enum.GetValues(typeof(FetchQuality));
     [ObservableProperty] public partial string SelectedLanguage { get; set; }
     [ObservableProperty] public partial ThemeMode CurrentTheme { get; set; }
+    [ObservableProperty] public partial string ThemeModeText { get; set; }
 
     [RelayCommand]
     private void SetTheme(string t)
@@ -69,6 +75,22 @@ public partial class SettingsViewModel : ObservableObject
 
     partial void OnSelectedLanguageChanged(string value)
         => _settingsManager.Language = value;
+
+    partial void OnCurrentThemeChanged(ThemeMode value)
+    {
+        switch(value)
+        {
+            case ThemeMode.Light:
+                ThemeModeText = LocalizationManager.Instance["Settings_Theme_Light"];
+                break;
+            case ThemeMode.Dark:
+                ThemeModeText = LocalizationManager.Instance["Settings_Theme_Dark"];
+                break;
+            case ThemeMode.System:
+                ThemeModeText = LocalizationManager.Instance["Settings_Theme_System"];
+                break;
+        }
+    }
 
     // Player
     [ObservableProperty] public partial double Volume { get; set; }
@@ -300,7 +322,7 @@ public partial class SettingsViewModel : ObservableObject
     [RelayCommand]
     private async Task OpenSourceCodeAsync()
     {
-
+        await Launcher.Default.OpenAsync("https://github.com/aqua0801/MauiMixTube/tree/master");
     }
 
     [RelayCommand(AllowConcurrentExecutions = false)]

@@ -3,6 +3,7 @@
                xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
                xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
                xmlns:models="clr-namespace:MauiMixTube.Models.Playlist"
+               xmlns:managers="clr-namespace:MauiMixTube.Managers"
                x:Class="MauiMixTube.Views.Popups.AddSourcePopup"
                BackgroundColor="Transparent"
                x:TypeArguments="models:PlaylistSource">
@@ -17,7 +18,7 @@
             <!-- Handle -->
             <BoxView Style="{StaticResource ExpanderHandle}" />
 
-            <Label Text="Add Source"
+            <Label Text="{Binding Path=[Popup_AddSource_Title],Source={x:Static managers:LocalizationManager.Instance}}"
                    Style="{StaticResource TitleLabel}"
                    FontSize="18" />
 
@@ -27,7 +28,7 @@
                                              Dark={StaticResource DarkDivider}}"
                     Padding="16,12">
                 <Entry x:Name="UrlEntry"
-                       Placeholder="Paste YouTube / Bilibili URL..."
+                       Placeholder="{Binding Path=[Popup_AddSource_Url_PlaceHolder],Source={x:Static managers:LocalizationManager.Instance}}"
                        IsSpellCheckEnabled="False"
                        IsTextPredictionEnabled="False"
                        PlaceholderColor="{AppThemeBinding 
@@ -41,7 +42,7 @@
 
             <!-- Platform chips -->
             <VerticalStackLayout Spacing="8">
-                <Label Text="Platform"
+                <Label Text="{Binding Path=[Popup_AddSource_Platform],Source={x:Static managers:LocalizationManager.Instance}}"
                        Style="{StaticResource SectionHeaderLabel}" />
                 <FlexLayout x:Name="TagChips"
                             Wrap="Wrap"
@@ -52,21 +53,21 @@
 
             <!-- Single / Playlist toggle -->
             <VerticalStackLayout Spacing="8">
-                <Label Text="Type"
+                <Label Text="{Binding Path=[Popup_AddSource_Type],Source={x:Static managers:LocalizationManager.Instance}}"
                        Style="{StaticResource SectionHeaderLabel}" />
                 <HorizontalStackLayout Spacing="24">
                     <RadioButton x:Name="RadioSingle"
-                                 Content="Single"
+                                 Content="{Binding Path=[Popup_AddSource_Single],Source={x:Static managers:LocalizationManager.Instance}}"
                                  IsChecked="True"
                                  GroupName="SourceType" />
                     <RadioButton x:Name="RadioPlaylist"
-                                 Content="Playlist"
+                                 Content="{Binding Path=[Popup_AddSource_Playlist],Source={x:Static managers:LocalizationManager.Instance}}"
                                  GroupName="SourceType" />
                 </HorizontalStackLayout>
             </VerticalStackLayout>
 
             <!-- Add button -->
-            <Button Text="Add"
+            <Button Text="{Binding Path=[Popup_AddSource_Add],Source={x:Static managers:LocalizationManager.Instance}}"
                     Style="{StaticResource PlayButtonStyle}"
                     WidthRequest="-1"
                     HorizontalOptions="Fill"

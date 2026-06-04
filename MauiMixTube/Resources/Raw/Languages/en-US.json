@@ -23,6 +23,9 @@
     "Action_Export":"Export",
     "Action_Delete":"Delete",
 
+    "Options_DeleteFromPlaylist" : "Delete From Playlist",
+    "Options_RemoveFromQueue" : "Remove From Playing Queue",
+
     "Import_AsNew":"As New Playlist",
     "Import_MergeExisting":"Merge Existing Playlist",
     "Import_Title":"Select Import Method",
@@ -48,6 +51,10 @@
     "Settings_Language" : "Language",
     "Settings_Appearance" : "Appearance",
     "Settings_Theme" : "Theme",
+
+    "Settings_Theme_Light":"Light",
+    "Settings_Theme_Dark":"Dark",
+    "Settings_Theme_System":"System",
 
     "Settings_Audio" : "Audio",
     "Settings_DefaultVolume" : "Default Volume",
@@ -96,6 +103,18 @@
     "Settings_FetchPageSizeDesc": "The maximum number of metadata items to fetch forward when triggering an album preview.",
     
     "Settings_SourceCode" : "Source code",
-    "Settings_Licenses" : "Licenses"
+    "Settings_Licenses" : "Licenses",
 
+    "Popup_AddSource_Title" : "Add Source",
+    "Popup_AddSource_Url_PlaceHolder" : "Paste URL Here...",
+    "Popup_AddSource_Platform" : "Platform",
+    "Popup_AddSource_Type" : "Type",
+    "Popup_AddSource_Single" : "Single",
+    "Popup_AddSource_Playlist" : "Playlist",
+    "Popup_AddSource_Add" : "Add",
+
+    "Popup_CreatePlaylist_Title" : "Create Playlist",
+    "Popup_CreatePlaylist_NamePlaceholder" : "Input Playlist Name...",
+    "Popup_CreatePlaylist_Cancel" : "Cancel",
+    "Popup_CreatePlaylist_Create" : "Create"
 }

@@ -145,26 +145,24 @@ public partial class MainPage : ContentPage
         var mv = BindingContext as MainViewModel;
         if (track is null || mv is null) return;
 
+        var cancel = LocalizationManager.Instance["Action_Cancel"];
+        var delete = LocalizationManager.Instance["Options_DeleteFromPlaylist"];
+        var remove = LocalizationManager.Instance["Options_RemoveFromQueue"];
+
         var action = await Shell.Current.DisplayActionSheetAsync(
             track.Title,
-            "Cancel",
-            "Delete from Playlist",
-            "Remove from Queue");
+            cancel,
+            delete,
+            remove);
 
-        switch (action)
+        if (action == delete)
         {
-            case "Delete from Playlist":
-                {
-                    mv.HandleRemoveFromPlaylist(track);
-                    break;
-                }
-            case "Remove from Queue":
-                {
-                    mv.HandleRemoveFromQueue(track);
-                    break;
-                }
+            mv.HandleRemoveFromPlaylist(track);
         }
-
+        else if (action == remove) 
+        {
+            mv.HandleRemoveFromQueue(track);
+        }
     }
 
     private async Task RenameAsync(UserPlaylist playlist)
