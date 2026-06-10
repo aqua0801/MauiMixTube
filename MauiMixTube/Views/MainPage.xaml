@@ -351,15 +351,34 @@
                                 <!-- LYRICS TAB CONTENT -->
                                 <ScrollView x:Name="LyricsPanel"
                                             Grid.Row="1"
-                                            HeightRequest="280"
                                             VerticalScrollBarVisibility="Never"
                                             IsVisible="{Binding ActiveTab,
                                             Converter={converters:EnumToBoolConverter},
                                             ConverterParameter='Lyrics'}">
-                                    <Label x:Name="LyricsLabel"
-                                           Text="{Binding Path=[Lyrics_PlaceHolder] , Source={x:Static managers:LocalizationManager.Instance}}"
-                                           Style="{StaticResource LyricsLabel}"
-                                           Padding="8,0" />
+                                    <VerticalStackLayout BindableLayout.ItemsSource="{Binding AlbumLyrics}">
+                                        <BindableLayout.ItemTemplate>
+                                            <DataTemplate x:DataType="models:LyricsDisplayItem">
+                                                <Label Text="{Binding Content}"
+                                                       Style="{StaticResource LyricsLabel}"
+                                                       Padding="8,4">
+                                                    <Label.Triggers>
+                                                        <DataTrigger TargetType="Label"
+                                                                     Binding="{Binding IsCurrent}"
+                                                                     Value="True">
+                                                            <Setter Property="FontAttributes"
+                                                                    Value="Bold" />
+                                                            <Setter Property="TextColor"
+                                                                    Value="{AppThemeBinding
+                                                                            Light={StaticResource LightPrimary},
+                                                                            Dark={StaticResource DarkPrimary}}" />
+                                                            <Setter Property="FontSize"
+                                                                    Value="16" />
+                                                        </DataTrigger>
+                                                    </Label.Triggers>
+                                                </Label>
+                                            </DataTemplate>
+                                        </BindableLayout.ItemTemplate>
+                                    </VerticalStackLayout>
                                 </ScrollView>
 
                                 <ScrollView IsVisible="{Binding ActiveTab,

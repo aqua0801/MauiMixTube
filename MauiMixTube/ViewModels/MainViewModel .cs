@@ -62,6 +62,7 @@ namespace MauiMixTube.ViewModels
         [ObservableProperty] public partial UserPlaylist? SelectedPlaylist { get; set; }
         [ObservableProperty] public partial bool IsBusy { get; set; }
         [ObservableProperty] public partial ObservableCollection<TrackDisplayItem> AlbumTracks { get; set; } = new();
+        [ObservableProperty] public partial ObservableCollection<LyricsDisplayItem> AlbumLyrics { get; set; } = new();
 
         [ObservableProperty]
         [NotifyPropertyChangedFor(nameof(IsAlbumTabOpening))]
@@ -76,7 +77,7 @@ namespace MauiMixTube.ViewModels
         public partial bool IsBottomExpanderExpanded { get; set; }
         public ObservableCollection<TrackDisplayItem> FilteredAlbumTracks { get; } = new();
 
-        public bool IsFetchingTracks;
+        public bool IsFetchingTracks , IsFetchingLyrics;
 
         public bool IsAlbumTabOpening => ActiveTab == BottomPanelTab.Album && IsBottomExpanderExpanded;
         public bool IsLyricsTabOpening => ActiveTab == BottomPanelTab.Lyrics && IsBottomExpanderExpanded;
@@ -131,6 +132,10 @@ namespace MauiMixTube.ViewModels
                         for(int i=0;i<AlbumTracks.Count;i++)
                             AlbumTracks[i].IsCurrent = i == info.OrderNum;
                     }
+
+                    AlbumLyrics.Clear();
+                    if (IsLyricsTabOpening)
+                        await FetchLyricsAsync();
                 });
             };
 
@@ -174,15 +179,30 @@ namespace MauiMixTube.ViewModels
         {
             while (await _progressTimer.WaitForNextTickAsync(ct))
             {
-                if(!IsSliderDragging)
+                var totalSeconds = _playlistManager.TotalDuration.TotalSeconds;
+                var currentSeconds = _playlistManager.CurrentPosition.TotalSeconds;
+                if (!IsSliderDragging)
                 {
-                    var ratio = _playlistManager.TotalDuration.TotalSeconds != 0 ? 
-                        _playlistManager.CurrentPosition.TotalSeconds / _playlistManager.TotalDuration.TotalSeconds : 
+                    var ratio = totalSeconds != 0 ? 
+                        currentSeconds / totalSeconds : 
                         0;
                     Progress = Math.Clamp(ratio, 0, 1);
                 }
 
                 CurrentTime = FormatTime(_playlistManager.CurrentPosition);
+
+                if(AlbumLyrics.Count > 0 && IsLyricsTabOpening)
+                {
+                    for(int i=0;i<AlbumLyrics.Count;i++)
+                    {
+                        var lyrics = AlbumLyrics[i];
+                        var isCurrent = lyrics.IsCurrent;
+                        lyrics.IsCurrent = currentSeconds >= lyrics.Offset && 
+                                        currentSeconds <= lyrics.Offset + lyrics.Duration;
+                        if(!isCurrent && lyrics.IsCurrent)
+                            WeakReferenceMessenger.Default.Send(new ScrollToLyricsMessage(i));
+                    }
+                }
             }
         }
 
@@ -321,6 +341,11 @@ namespace MauiMixTube.ViewModels
                 if (AlbumTracks.Count < 1)
                     await FetchNextPageAsync();
             }
+            else if(IsLyricsTabOpening)
+            {
+                if (AlbumLyrics.Count < 1)
+                    await FetchLyricsAsync();
+            }
         }
 
         [RelayCommand]
@@ -397,6 +422,46 @@ namespace MauiMixTube.ViewModels
                 finally
                 {
                     IsFetchingTracks = false;
+                }
+            }
+        }
+
+        [RelayCommand]
+        private async Task FetchLyricsAsync()
+        {
+            if(!IsFetchingLyrics)
+            {
+                try
+                {
+                    IsFetchingLyrics = true;
+                    AlbumLyrics.Clear();
+                    var lyricsSet = await _playlistManager.FetchCurrentTrackLyricsAsync(CancellationToken.None);
+
+                    if(lyricsSet.HasLyrics)
+                    {
+                        foreach(var lyrics in lyricsSet.Lyrics)
+                        {
+                            AlbumLyrics.Add(new()
+                            {
+                                Content = lyrics.Content,
+                                Offset = lyrics.OffsetSec,
+                                Duration = lyrics.DurationSec,
+                            });
+                        }
+                    }
+                    else
+                    {
+                        AlbumLyrics.Add(new()
+                        {
+                            Content = LocalizationManager.Instance["Lyrics_PlaceHolder"],
+                            Offset = 0 ,
+                            Duration = 0
+                        });
+                    }
+                }
+                finally
+                {
+                    IsFetchingLyrics = false;
                 }
             }
         }

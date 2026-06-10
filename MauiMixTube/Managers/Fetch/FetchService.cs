@@ -51,8 +51,8 @@ namespace MauiMixTube.Models.Fetch
 
         public virtual string NormalizeUrl(string url) => url;
 
-        public virtual Task<string?> FetchLyricsAsync(string url, CancellationToken ct = default)
-            => Task.FromResult<string?>(null);
+        public virtual Task<LyricsSet> FetchLyricsAsync(string url, CancellationToken ct = default)
+            => Task.FromResult(LyricsSet.Empty);
 
         public virtual FetchInfo.FfmpegArgsDelegate GetFfmpegArgs() => (instance, seek) =>
         {

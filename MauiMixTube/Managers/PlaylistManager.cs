@@ -364,6 +364,16 @@ namespace MauiMixTube.Managers
 
         }
 
+        public async Task<LyricsSet> FetchCurrentTrackLyricsAsync(CancellationToken ct)
+        {
+            var entry = GetCurrentTrack();
+
+            if(entry != QueueEntry.None)
+                return await _fetchManager.ResolveLyricsAsync(entry,ct);
+
+            return LyricsSet.Empty;
+        }
+
         public async Task<bool> TryRemoveQueue(int index , CancellationToken ct)
         {
             if (_playQueue is null || index < 0 || index >= _playQueue.Count)

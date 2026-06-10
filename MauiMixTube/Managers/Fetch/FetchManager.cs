@@ -67,6 +67,19 @@ namespace MauiMixTube.Managers.Fetch
             throw new InvalidOperationException($"Unable to resolve audio for URL : {url}");
         }
 
+        public async Task<LyricsSet> ResolveLyricsAsync(QueueEntry entry , CancellationToken ct = default)
+        {
+            foreach(var service in _services)
+            {
+                if(service.SupportsLyrics && service.CanHandle(entry.Tag,entry.Url))
+                {
+                    return await service.FetchLyricsAsync(entry.Url, ct);
+                }
+            }
+
+            return LyricsSet.Empty;
+        }
+
         public FetchService ResolveService(WebTag tag,string url)
         {
             foreach (var service in _services)

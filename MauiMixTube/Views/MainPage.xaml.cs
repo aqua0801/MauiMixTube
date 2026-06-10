@@ -32,6 +32,41 @@ public partial class MainPage : ContentPage
         WeakReferenceMessenger.Default
             .Register<CloseSidebarMessage>(this, async (r, m) =>
             await CloseSidebarAsync());
+
+        WeakReferenceMessenger.Default
+            .Register<ScrollToLyricsMessage>(this, async (r, m) =>
+            {
+                await MainThread.InvokeOnMainThreadAsync(async () =>
+                {
+                    var target = (LyricsPanel as IVisualTreeElement)
+                        .GetVisualChildren()[0]
+                        .GetVisualTreeDescendants()
+                        .OfType<Label>()
+                        .ElementAtOrDefault(m.Index);
+
+                    if (target is null) return;
+
+                    double targetAbsoluteTop = 0;
+                    Element current = target;
+
+                    while (current != null && current != LyricsPanel)
+                    {
+                        if (current is VisualElement ve)
+                            targetAbsoluteTop += ve.Y;
+                        current = current.Parent;
+                    }
+
+                    double targetAbsoluteBottom = targetAbsoluteTop + target.Height;
+                    double viewportTop = LyricsPanel.ScrollY;
+                    double viewportBottom = viewportTop + LyricsPanel.Height;
+
+                    bool isVisible = targetAbsoluteTop >= viewportTop
+                                  && targetAbsoluteBottom <= viewportBottom;
+
+                    if (isVisible)
+                        await LyricsPanel.ScrollToAsync(target, ScrollToPosition.Center, animated: true);
+                });
+            });
     }
 
     // ════════════════════════════════════════════════════════════════════════
