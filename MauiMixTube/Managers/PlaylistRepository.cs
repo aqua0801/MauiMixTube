@@ -146,7 +146,7 @@ namespace MauiMixTube.Managers
                 firstSingle = firstSource;
 
             var info = await _fetchManager.ResolveMetadataAsync(
-                new QueueEntry(firstSingle.Tag, firstSingle.Url,false), ct);
+                new QueueEntry(firstSingle.Tag, firstSingle.Url,false), FetchStrategy.Default, ct);
 
             if (info?.Fetch.ThumbnailUrl is null) return null;
 

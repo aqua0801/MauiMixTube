@@ -324,7 +324,7 @@ namespace MauiMixTube.Managers
                 await semaphore.WaitAsync(ct);
                 try
                 {
-                    var info = await _fetchManager.ResolveMetadataAsync(queue, ct);
+                    var info = await _fetchManager.ResolveMetadataAsync(queue,FetchStrategy.Default, ct);
                     return (index: i, info);
                 }
                 finally { semaphore.Release(); }
@@ -399,7 +399,7 @@ namespace MauiMixTube.Managers
 
         private async Task PreviewTrackAsync(QueueEntry entry, CancellationToken ct)
         {
-            var info = await _fetchManager.ResolveMetadataAsync(entry, ct);
+            var info = await _fetchManager.ResolveMetadataAsync(entry,FetchStrategy.Default, ct);
             if (info is null) return;
 
             _currentTrack = info;
@@ -408,7 +408,7 @@ namespace MauiMixTube.Managers
 
 
         private async Task InvokeTrackChangedEventAsync(CancellationToken ct)
-            => InvokeTrackChangeEvent(await ResolveAudioInfoAsync(_playingIndex<_playQueue.Count?_playQueue[_playingIndex] : QueueEntry.None , ct));
+            => InvokeTrackChangeEvent(await ResolveAudioInfoAsync(_playingIndex<_playQueue.Count?_playQueue[_playingIndex] : QueueEntry.None ,FetchStrategy.Default, ct));
         private void InvokeTrackChangeEvent(AudioInfo? info)
         {
             _mediaControls.UpdateNowPlaying(info);
@@ -482,12 +482,15 @@ namespace MauiMixTube.Managers
             }
         }
 
-        private async Task<AudioInfo?> ResolveAudioInfoAsync(QueueEntry entry, CancellationToken ct)
+        private async Task<AudioInfo?> ResolveAudioInfoAsync(
+            QueueEntry entry, 
+            FetchStrategy strategy,
+            CancellationToken ct)
         {
             if(entry == QueueEntry.None)
                 return null;
-            if (!_prefetchedMetadata.TryGetValue(entry.Url, out var info))
-                info = await _fetchManager.ResolveMetadataAsync(entry, ct);
+            if (strategy==FetchStrategy.ForceRetry || !_prefetchedMetadata.TryGetValue(entry.Url, out var info))
+                info = await _fetchManager.ResolveMetadataAsync(entry,strategy, ct);
             return info;
         }
 
@@ -497,19 +500,37 @@ namespace MauiMixTube.Managers
             {
                 var entry = _playQueue[_playingIndex];
 
-                AudioInfo? info = await ResolveAudioInfoAsync(entry, ct);
+                var retryAttempts = _settingsManager.MaxRetryAttempts;
+                retryAttempts = Math.Max(retryAttempts, 1);
 
-                if (info is null)
+                var strategy = FetchStrategy.Default;
+
+                for (int i=0;i<retryAttempts+1;i++)
                 {
-                    Console.WriteLine($"[Playlist] Cannot fetch URL , skipping：{entry.Url}");
-                    return;
+                    try
+                    {
+                        AudioInfo? info = await ResolveAudioInfoAsync(entry,strategy, ct);
+
+                        if (info is null)
+                        {
+                            Console.WriteLine($"[Playlist] Cannot fetch URL , skipping：{entry.Url}");
+                            strategy = FetchStrategy.ForceRetry;
+                            continue;
+                        }
+
+                        _currentTrack = info;
+                        InvokeTrackChangeEvent(_currentTrack);
+
+                        _currentAudio = await _audioPipeline.OpenAsync(info, ct);
+                        await StreamAudioAsync(_currentAudio, ct);
+                    }
+                    catch
+                    {
+                        if (ct.IsCancellationRequested)
+                            break;
+                        strategy = FetchStrategy.ForceRetry;
+                    }
                 }
-
-                _currentTrack = info;
-                InvokeTrackChangeEvent(_currentTrack);
-
-                _currentAudio = await _audioPipeline.OpenAsync(info, ct);
-                await StreamAudioAsync(_currentAudio, ct);
             }
             finally
             {

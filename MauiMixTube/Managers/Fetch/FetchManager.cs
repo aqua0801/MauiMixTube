@@ -41,11 +41,14 @@ namespace MauiMixTube.Managers.Fetch
                 .FirstOrDefault(s => s.CanDetectFromUrl(url))
                 ?.SupportedTag; 
 
-        public async Task<AudioInfo> ResolveMetadataAsync(QueueEntry entry, CancellationToken ct = default)
+        public async Task<AudioInfo> ResolveMetadataAsync(
+            QueueEntry entry, 
+            FetchStrategy strategy,
+            CancellationToken ct = default)
         {
             var key = CacheManager.ToKey(entry);
 
-            if (await _cacheManager.GetMetadataAsync(key) is { } cached)
+            if (strategy!=FetchStrategy.ForceRetry && await _cacheManager.GetMetadataAsync(key) is { } cached)
                 return cached;
 
             var tag = entry.Tag;
