@@ -33,6 +33,7 @@ namespace MauiMixTube.ViewModels
         [ObservableProperty] public partial double Progress { get; set; }
         [ObservableProperty] public partial string CurrentTime { get; set; } = "0:00";
         [ObservableProperty] public partial string TotalTime { get; set; } = "0:00";
+        [ObservableProperty] public partial bool IsBuffering { get; set; } = false;
 
         [ObservableProperty]
         [NotifyPropertyChangedFor(nameof(PlayPauseIcon))]
@@ -153,6 +154,14 @@ namespace MauiMixTube.ViewModels
             {
                 OnSidebarSearchQueryChanged(SidebarSearchQuery);
             };
+
+            WeakReferenceMessenger.Default
+                .Register<BufferingStartedMessage>(this, (r, m) =>
+                    MainThread.BeginInvokeOnMainThread(() => IsBuffering = true));
+
+            WeakReferenceMessenger.Default
+                .Register<BufferingEndedMessage>(this, (r, m) =>
+                    MainThread.BeginInvokeOnMainThread(() => IsBuffering = false));
         }
 
         private async Task LoadPlayListAsync()

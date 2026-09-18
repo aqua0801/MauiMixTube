@@ -195,6 +195,20 @@
                                    WidthRequest="300"
                                    HorizontalOptions="Fill" />
 
+                            <Grid IsVisible="{Binding IsBuffering}"
+                                  BackgroundColor="#66000000">
+
+                                <ActivityIndicator IsRunning="{Binding IsBuffering}"
+                                                   IsVisible="{Binding IsBuffering}"
+                                                   HorizontalOptions="Center"
+                                                   VerticalOptions="Center"
+                                                   Color="{AppThemeBinding 
+                                   Light={StaticResource LightPrimary},
+                                   Dark={StaticResource DarkPrimary}}"
+                                                   WidthRequest="42"
+                                                   HeightRequest="42" />
+                            </Grid>
+
                             <!-- Gradient foot on art -->
                             <Grid HeightRequest="80"
                                   VerticalOptions="End">

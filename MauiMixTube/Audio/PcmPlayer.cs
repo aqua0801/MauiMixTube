@@ -62,31 +62,67 @@ namespace MauiMixTube.Audio
                 _totalSamplesPlayed = 0;
                 var raw = new byte[BufferSamples * 4];
 
-                foreach (var buf in _buffers)
-                    await FillBufferAsync(pcm, buf, raw, ct);
+                AL.SourceStop(_source);
+                AL.GetSource(_source, ALGetSourcei.BuffersQueued, out int queued);
+                if (queued > 0)
+                    AL.SourceUnqueueBuffers(_source, queued);
 
-                AL.SourceQueueBuffers(_source, _buffers);
+                var silence = new byte[BufferSamples * 4];
+                foreach (var buf in _buffers)
+                {
+                    AL.BufferData(buf, Format, silence, SampleRate);
+                    AL.SourceQueueBuffer(_source, buf);
+                }
                 AL.SourcePlay(_source);
+
+                foreach (var buf in _buffers)
+                {
+                    AL.SourceUnqueueBuffer(_source);
+                    await FillBufferAsync(pcm, buf, raw, ct);
+                    AL.SourceQueueBuffer(_source, buf);
+                }
+
                 _currentStream = pcm;
 
                 while (!ct.IsCancellationRequested)
                 {
                     AL.GetSource(_source, ALGetSourcei.BuffersProcessed, out int processed);
+                    AL.GetSource(_source, ALGetSourcei.BuffersQueued, out int queued2);
+
+                    if (processed == _buffers.Length && queued2 == 0)
+                    {
+                        AL.SourcePause(_source);
+                        WeakReferenceMessenger.Default.Send(new BufferingStartedMessage());
+
+                        while (!ct.IsCancellationRequested)
+                        {
+                            int read = await pcm.ReadAsync(raw, 0, raw.Length, ct);
+                            if (read > 0)
+                            {
+                                ApplyEq(raw, read);
+                                if (read < raw.Length) Array.Clear(raw, read, raw.Length - read);
+
+                                int buf = _buffers[0];
+                                AL.BufferData(buf, Format, raw, SampleRate);
+                                AL.SourceQueueBuffer(_source, buf);
+                                break;
+                            }
+                            await Task.Delay(50, ct);
+                        }
+
+                        AL.SourcePlay(_source);
+                        WeakReferenceMessenger.Default.Send(new BufferingEndedMessage());
+                    }
 
                     while (processed-- > 0)
                     {
                         int buf = AL.SourceUnqueueBuffer(_source);
-
                         _totalSamplesPlayed += BufferSamples;
 
                         int read = await pcm.ReadAsync(raw, 0, raw.Length, ct);
                         if (read == 0) return;
 
-                        if(_settingsManager.AutoEqEnabled && _eqProcessor is not null)
-                        {
-                            var sample = MemoryMarshal.Cast<byte, short>(raw.AsSpan(0,read));
-                            _eqProcessor.Process(sample);
-                        }
+                        ApplyEq(raw, read);
 
                         if (read < raw.Length)
                             Array.Clear(raw, read, raw.Length - read);
@@ -95,10 +131,17 @@ namespace MauiMixTube.Audio
                         AL.SourceQueueBuffer(_source, buf);
                     }
 
-                    await Task.Delay(10);
+                    await Task.Delay(10, ct);
                 }
             }
-            catch(OperationCanceledException) { }
+            catch (OperationCanceledException) { }
+        }
+
+        private void ApplyEq(byte[] raw, int length)
+        {
+            if (!_settingsManager.AutoEqEnabled || _eqProcessor is null) return;
+            var samples = MemoryMarshal.Cast<byte, short>(raw.AsSpan(0, length));
+            _eqProcessor.Process(samples);
         }
 
         private async Task FillBufferAsync(
