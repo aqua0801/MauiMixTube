@@ -17,6 +17,8 @@ public partial class MainPage : ContentPage
     private bool _sidebarOpen = false;
 
     private readonly FetchManager _fetchManager;
+    private DateTime _lastDragCompletedTime = DateTime.MinValue;
+    private const int DragThrottleIntervalMilliseconds = 100;
 
     // ── Init ─────────────────────────────────────────────────────────────────
     public MainPage(MainViewModel vm , FetchManager fetchManager)
@@ -117,9 +119,14 @@ public partial class MainPage : ContentPage
 
     private void OnSliderDragCompleted(object sender, EventArgs e)
     {
+        if ((DateTime.UtcNow - _lastDragCompletedTime).TotalMilliseconds < DragThrottleIntervalMilliseconds)
+            return;
+        
         if (BindingContext is not MainViewModel mv ||
             sender is not Slider slider)
             return;
+
+        _lastDragCompletedTime = DateTime.UtcNow;
         mv.HandleSliderDrag(slider.Value);
         mv.IsSliderDragging = false;
     }

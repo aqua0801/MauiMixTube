@@ -505,47 +505,55 @@ namespace MauiMixTube.Managers
 
         private async Task PlayCurrentTrackAsync(CancellationToken ct)
         {
+            
+            var entry = _playQueue[_playingIndex];
+
+            var retryAttempts = _settingsManager.MaxRetryAttempts;
+            retryAttempts = Math.Max(retryAttempts, 1);
+
+            var strategy = FetchStrategy.Default;
             try
             {
-                var entry = _playQueue[_playingIndex];
-
-                var retryAttempts = _settingsManager.MaxRetryAttempts;
-                retryAttempts = Math.Max(retryAttempts, 1);
-
-                var strategy = FetchStrategy.Default;
-
-                for (int i=0;i<retryAttempts+1;i++)
+                ct.ThrowIfCancellationRequested();
+                AudioInfo? info = null;
+                for (int i = 0; i < retryAttempts + 1; i++)
                 {
                     try
                     {
-                        AudioInfo? info = await ResolveAudioInfoAsync(entry,strategy, ct);
-
-                        if (info is null)
-                        {
-                            Console.WriteLine($"[Playlist] Cannot fetch URL , skipping：{entry.Url}");
-                            strategy = FetchStrategy.ForceRetry;
-                            continue;
-                        }
-
-                        _currentTrack = info;
-                        InvokeTrackChangeEvent(_currentTrack);
-
-                        _currentAudio = await _audioPipeline.OpenAsync(info, ct);
-                        await StreamAudioAsync(_currentAudio, ct);
+                        info = await ResolveAudioInfoAsync(entry, strategy, ct);
+                        if (info is not null)
+                            break;
                     }
                     catch
                     {
-                        if (ct.IsCancellationRequested)
-                            break;
                         strategy = FetchStrategy.ForceRetry;
                     }
                 }
+
+                if (info is null)
+                {
+                    Console.WriteLine($"[Playlist] Cannot fetch URL , skipping：{entry.Url}");
+                    strategy = FetchStrategy.ForceRetry;
+                    return;
+                }
+                _currentTrack = info;
+                InvokeTrackChangeEvent(_currentTrack);
+                _currentAudio = await _audioPipeline.OpenAsync(info, ct);
+                await StreamAudioAsync(_currentAudio, ct);
+
+            }
+            catch
+            {
+                if (ct.IsCancellationRequested)
+                    return;
+                strategy = FetchStrategy.ForceRetry;
             }
             finally
             {
                 _currentAudio?.Dispose();
                 _currentAudio = null;
             }
+            
         }
 
         private async Task StreamAudioAsync(ChunkedAudioStream currentAudio , CancellationToken ct)
