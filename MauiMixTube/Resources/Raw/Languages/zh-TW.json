@@ -67,6 +67,9 @@
     "Settings_RecentlyPlayedCount" : "最近播放數量",
     "Settings_RecentlyPlayedCountDesc" : "設定最近播放最多紀錄的歌曲數量",
 
+    "Settings_DeviceName":"輸出裝置",
+    "Settings_AudioDevice_Default":"預設 (跟隨系統)",
+
     "Settings_Eq" : "等化器",
     "Settings_AutoEq" : "動態等化器",
     "Settings_AutoEqDesc" : "即時自動優化音訊 使音效趨近哈曼目標曲線",

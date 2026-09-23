@@ -21,6 +21,12 @@ namespace MauiMixTube
     {
         public static MauiApp CreateMauiApp()
         {
+#if DEBUG
+            System.Environment.SetEnvironmentVariable("ALSOFT_LOGLEVEL", "3");
+            Environment.SetEnvironmentVariable(
+                "ALSOFT_LOGFILE",
+                @".\@openal.log");
+#endif
             var builder = MauiApp.CreateBuilder();
             builder
                 .UseMauiApp<App>()
@@ -66,6 +72,7 @@ namespace MauiMixTube
             builder.Services.AddTransient<AddSourcePopup>();
 
             builder.Services.AddSingleton<IMediaControlsService, MediaControlsService>();
+            builder.Services.AddSingleton<IAudioDeviceWatcher, AudioDeviceWatcher>();
 
             Routing.RegisterRoute("settings", typeof(SettingsPage));
 

@@ -67,6 +67,9 @@
     "Settings_RecentlyPlayedCount" : "Recently Played Count",
     "Settings_RecentlyPlayedCountDesc" : "Set the maximum number of songs to keep in your recently played list.",
 
+    "Settings_DeviceName":"Output Device",
+    "Settings_AudioDevice_Default":"Default (System)",
+
     "Settings_Eq" : "Equalizer",
     "Settings_AutoEq" : "Real-time Auto-EQ",
     "Settings_AutoEqDesc" : "Automatically optimizes your audio in real-time to match the Harman Target curve.",

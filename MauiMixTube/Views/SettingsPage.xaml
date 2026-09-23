@@ -356,6 +356,18 @@
                            Style="{StaticResource TitleLabel}"
                            Margin="0,0,0,28" />
 
+                    <Label Text="{Binding Path=[Settings_DeviceName], Source={x:Static managers:LocalizationManager.Instance}}"
+                           Style="{StaticResource SectionHeaderLabel}"
+                           Margin="0,0,0,10" />
+
+                    <Picker x:Name="audioDevicePicker"
+                            ItemsSource="{Binding AudioDevices}"
+                            SelectedItem="{Binding SelectedAudioDevice,Mode=TwoWay}"
+                            TextColor="{AppThemeBinding Light={StaticResource LightPrimary},
+                                       Dark={StaticResource DarkPrimary}}"
+                            Margin="0,0,0,10">
+                    </Picker>
+
                     <Label Text="{Binding Path=[Settings_Eq], Source={x:Static managers:LocalizationManager.Instance}}"
                            Style="{StaticResource SectionHeaderLabel}"
                            Margin="0,0,0,10" />

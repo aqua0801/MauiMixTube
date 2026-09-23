@@ -1,6 +1,7 @@
 ﻿using CommunityToolkit.Maui.Alerts;
 using CommunityToolkit.Maui.Core;
 using CommunityToolkit.Mvvm.Messaging;
+using MauiMixTube.Audio;
 using MauiMixTube.Audio.Eq;
 using MauiMixTube.Helpers;
 using MauiMixTube.Managers;
@@ -18,7 +19,8 @@ namespace MauiMixTube
             FetchManager fetchManager ,
             CacheManager cacheManager,
             PlaylistRepository playlistRepository ,
-            IMediaControlsService mediaControls)
+            IMediaControlsService mediaControls,
+            IAudioDeviceWatcher audioDeviceWatcher)
         {
             InitializeComponent();
 
@@ -33,7 +35,8 @@ namespace MauiMixTube
                 fetchManager,
                 cacheManager,
                 playlistRepository,
-                mediaControls);
+                mediaControls,
+                audioDeviceWatcher);
         }
 
         protected override Window CreateWindow(IActivationState? activationState)
@@ -44,12 +47,15 @@ namespace MauiMixTube
             FetchManager fetchManager ,
             CacheManager cacheManager,
             PlaylistRepository playlistRepository,
-            IMediaControlsService mediaControls)
+            IMediaControlsService mediaControls,
+            IAudioDeviceWatcher audioDeviceWatcher)
         {
             SendStatusAndProgress("Ensuring Directories...",0.1);
             await AppPaths.EnsureDirectories();
             SendStatusAndProgress("Initializing Settings...",0.4);
             await settingsManager.InitializeAsync();
+            if (string.IsNullOrEmpty(settingsManager.AudioDeviceName))
+                audioDeviceWatcher.StartWatching();
             SendStatusAndProgress(LocalizationManager.Instance["Loading_Initializing_Fetch_Module"],0.5);
             await fetchManager.OnStartupAsync();
             SendStatusAndProgress(LocalizationManager.Instance["Loading_Initializing_Cache_Module"],0.6);

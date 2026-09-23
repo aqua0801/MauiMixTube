@@ -110,6 +110,15 @@ namespace MauiMixTube.Managers
                     }
                 });
 
+            WeakReferenceMessenger.Default
+                .Register<AudioDeviceChangedMessage>(this, (r, m) =>
+                {
+                    var deviceName = string.IsNullOrEmpty(m.DeviceName)
+                        ? PcmPlayer.GetDefaultDevice()
+                        : m.DeviceName;
+
+                    _pcmPlayer.SwitchDevice(deviceName);
+                });
         }
 
         public async Task EnqueueAsync(QueueEntry entry , CancellationToken ct)

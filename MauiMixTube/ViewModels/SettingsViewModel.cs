@@ -1,14 +1,16 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
+﻿using CommunityToolkit.Maui.Core.Extensions;
+using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
+using MauiMixTube.Audio;
 using MauiMixTube.Audio.Eq;
 using MauiMixTube.Helpers;
 using MauiMixTube.Managers;
 using MauiMixTube.Messages;
 using MauiMixTube.Models.Settings;
 using System.Collections.ObjectModel;
-using System.Runtime.InteropServices;
 using System.Diagnostics;
+using System.Runtime.InteropServices;
 
 
 namespace MauiMixTube.ViewModels;
@@ -17,19 +19,24 @@ public partial class SettingsViewModel : ObservableObject
 {
     private readonly SettingsManager _settingsManager;
     private readonly CacheManager _cacheManager;
+    private bool _isInitialized = false;
     public SettingsViewModel(SettingsManager settingsManager , CacheManager cacheManager)
     {
         _settingsManager = settingsManager;
         _cacheManager = cacheManager;
 
         SelectedLanguage = settingsManager.Language;
+        ThemeModeText = string.Empty;
         CurrentTheme = settingsManager.Theme;
         Volume = settingsManager.Volume;
         SelectedQuality = settingsManager.FetchQuality;
         AutoEqEnabled = settingsManager.AutoEqEnabled;
-        SelectedEqDevice = settingsManager.DeviceName;
-        EqSearchQuery = settingsManager.DeviceName;
+        SelectedEqDevice = settingsManager.EqDeviceName;
+        EqSearchQuery = settingsManager.EqDeviceName;
         EqSearchResults.Clear();
+        LoadAudioDevices();
+        SelectedAudioDevice = String.IsNullOrEmpty(_settingsManager.AudioDeviceName)? 
+            DefaultDeviceLabel : AudioDeviceHelper.CleanDeviceName(_settingsManager.AudioDeviceName);
         RecentlyPlayedCount = settingsManager.RecentlyPlayedCount;
 
         MaxCacheSizeMb = settingsManager.MaxCacheSizeMb;
@@ -47,7 +54,10 @@ public partial class SettingsViewModel : ObservableObject
         LocalizationManager.Instance.PropertyChanged += (s, e) =>
         {
             OnCurrentThemeChanged(CurrentTheme);
+            if(AudioDevices.Count > 0)
+                AudioDevices[0] = DefaultDeviceLabel;
         };
+        _isInitialized = true;
     }
 
     public LocalizationManager Localization => LocalizationManager.Instance;
@@ -63,6 +73,7 @@ public partial class SettingsViewModel : ObservableObject
     public IReadOnlyList<FetchQuality> AvailableQualities
         => (FetchQuality[])Enum.GetValues(typeof(FetchQuality));
     [ObservableProperty] public partial string SelectedLanguage { get; set; }
+
     [ObservableProperty] public partial ThemeMode CurrentTheme { get; set; }
     [ObservableProperty] public partial string ThemeModeText { get; set; }
 
@@ -112,6 +123,9 @@ public partial class SettingsViewModel : ObservableObject
 
     public bool HasEqSearchResults => EqSearchResults.Count > 0;
     public bool HasSelectedEqDevice => !String.IsNullOrEmpty(SelectedEqDevice);
+    public ObservableCollection<string> AudioDevices { get; private set; } = new ();
+    public string DefaultDeviceLabel => LocalizationManager.Instance["Settings_AudioDevice_Default"];
+    [ObservableProperty] public partial string SelectedAudioDevice { get; set; } = string.Empty;
 
     partial void OnVolumeChanged(double value)
     {
@@ -142,7 +156,7 @@ public partial class SettingsViewModel : ObservableObject
 
     partial void OnSelectedEqDeviceChanged(string? value)
     {
-        _settingsManager.DeviceName = value??String.Empty;
+        _settingsManager.EqDeviceName = value??String.Empty;
     }
 
     partial void OnRecentlyPlayedCountChanged(int value)
@@ -166,6 +180,29 @@ public partial class SettingsViewModel : ObservableObject
     {
         SelectedEqDevice = null;
         EqSearchQuery = string.Empty;
+    }
+
+    public void LoadAudioDevices()
+    {
+        AudioDevices.Clear();
+        AudioDevices = PcmPlayer.GetAvailableDevices()
+            .Select(AudioDeviceHelper.CleanDeviceName)
+            .Prepend(DefaultDeviceLabel)
+            .ToObservableCollection();
+    }
+
+    partial void OnSelectedAudioDeviceChanged(string value)
+    {
+        if (!_isInitialized)
+            return;
+
+        var raw = value == DefaultDeviceLabel
+            ? string.Empty
+            : PcmPlayer.GetAvailableDevices()
+                .FirstOrDefault(d => AudioDeviceHelper.CleanDeviceName(d) == value)
+                ?? value;
+
+        _settingsManager.AudioDeviceName = raw;
     }
 
     [RelayCommand]

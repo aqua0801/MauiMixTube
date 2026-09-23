@@ -10,7 +10,8 @@ namespace MauiMixTube.Models.Settings
         public int RecentlyPlayedCount { get; set; } = 50;
         public bool LoudnessNormEnabled { get; set; } = true;
         public bool AutoEqEnabled { get; set; } = false;
-        public string DeviceName { get; set; } = String.Empty;
+        public string EqDeviceName { get; set; } = String.Empty;
+        public string AudioDeviceName { get; set;  } = String.Empty;
     }
 
 }

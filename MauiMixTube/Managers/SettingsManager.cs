@@ -1,4 +1,5 @@
 ﻿using CommunityToolkit.Mvvm.Messaging;
+using MauiMixTube.Audio;
 using MauiMixTube.Extensions;
 using MauiMixTube.Messages;
 using MauiMixTube.Models.Settings;
@@ -18,11 +19,15 @@ namespace MauiMixTube.Managers
         {
 
         }
-
+        private readonly IAudioDeviceWatcher _audioDeviceWatcher;
         private AppSettings _current;
         private readonly SemaphoreSlim _saveLock = new(1, 1);
         private CancellationTokenSource _saveCts = new();
         public AppSettings Current => _current ??= new();
+        public SettingsManager(IAudioDeviceWatcher audioDeviceWatcher)
+        {
+            _audioDeviceWatcher = audioDeviceWatcher;
+        }
 
         public async Task InitializeAsync()
         {
@@ -132,14 +137,39 @@ namespace MauiMixTube.Managers
             }
         }
 
-        public string DeviceName
+        public string EqDeviceName
         {
-            get => Current.Player.DeviceName;
+            get => Current.Player.EqDeviceName;
             set
             {
-                if(value != Current.Player.DeviceName)
+                if(value != Current.Player.EqDeviceName)
                 {
-                    Current.Player.DeviceName = value;
+                    Current.Player.EqDeviceName = value;
+                    ScheduleSave();
+                }
+            }
+        }
+
+        public string AudioDeviceName
+        {
+            get => Current.Player.AudioDeviceName;
+            set
+            {
+                if (value != Current.Player.AudioDeviceName)
+                {
+                    Current.Player.AudioDeviceName = value;
+
+                    if (string.IsNullOrEmpty(value))
+                    {
+                        _audioDeviceWatcher.StartWatching();
+                        WeakReferenceMessenger.Default.Send(new AudioDeviceChangedMessage(string.Empty));
+                    }
+                    else
+                    {
+                        _audioDeviceWatcher.StopWatching();
+                        WeakReferenceMessenger.Default.Send(new AudioDeviceChangedMessage(value));
+                    }
+
                     ScheduleSave();
                 }
             }
