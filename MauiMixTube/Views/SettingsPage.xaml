@@ -368,6 +368,23 @@
                             Margin="0,0,0,10">
                     </Picker>
 
+                    <Border Style="{StaticResource SettingsRowStyle}"
+                            Margin="0,0,0,10">
+                        <Grid ColumnDefinitions="*,Auto">
+                            <VerticalStackLayout Grid.Column="0"
+                                                 Spacing="2">
+                                <Label Text="{Binding [Settings_AlcReopenEnabled], Source={x:Static managers:LocalizationManager.Instance}}"
+                                       Style="{StaticResource SubtitleLabel}" />
+                                <Label Text="{Binding [Settings_AlcReopenEnabledDesc], Source={x:Static managers:LocalizationManager.Instance}}"
+                                       Style="{StaticResource CaptionLabel}" />
+                            </VerticalStackLayout>
+                            <Switch Grid.Column="1"
+                                    IsToggled="{Binding AlcReopenEnabled}"
+                                    OnColor="{AppThemeBinding Light={StaticResource LightPrimary},
+                                          Dark={StaticResource DarkPrimary}}" />
+                        </Grid>
+                    </Border>
+
                     <Label Text="{Binding Path=[Settings_Eq], Source={x:Static managers:LocalizationManager.Instance}}"
                            Style="{StaticResource SectionHeaderLabel}"
                            Margin="0,0,0,10" />

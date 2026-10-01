@@ -175,6 +175,19 @@ namespace MauiMixTube.Managers
             }
         }
 
+        public bool AlcReopenEnabled
+        {
+            get => Current.Player.AlcReopenEnabled;
+            set 
+            {
+                if (value != Current.Player.AlcReopenEnabled)
+                {
+                    Current.Player.AlcReopenEnabled = value;
+                    ScheduleSave();
+                }
+            }
+        }
+
 
         public ThemeMode Theme
         {

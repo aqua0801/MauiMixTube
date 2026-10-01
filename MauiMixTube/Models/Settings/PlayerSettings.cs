@@ -12,6 +12,7 @@ namespace MauiMixTube.Models.Settings
         public bool AutoEqEnabled { get; set; } = false;
         public string EqDeviceName { get; set; } = String.Empty;
         public string AudioDeviceName { get; set;  } = String.Empty;
+        public bool AlcReopenEnabled { get; set; } = true;
     }
 
 }

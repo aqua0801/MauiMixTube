@@ -37,6 +37,7 @@ public partial class SettingsViewModel : ObservableObject
         LoadAudioDevices();
         SelectedAudioDevice = String.IsNullOrEmpty(_settingsManager.AudioDeviceName)? 
             DefaultDeviceLabel : AudioDeviceHelper.CleanDeviceName(_settingsManager.AudioDeviceName);
+        AlcReopenEnabled = settingsManager.AlcReopenEnabled;
         RecentlyPlayedCount = settingsManager.RecentlyPlayedCount;
 
         MaxCacheSizeMb = settingsManager.MaxCacheSizeMb;
@@ -126,6 +127,7 @@ public partial class SettingsViewModel : ObservableObject
     public ObservableCollection<string> AudioDevices { get; private set; } = new ();
     public string DefaultDeviceLabel => LocalizationManager.Instance["Settings_AudioDevice_Default"];
     [ObservableProperty] public partial string SelectedAudioDevice { get; set; } = string.Empty;
+    [ObservableProperty] public partial bool AlcReopenEnabled { get; set; } = true;
 
     partial void OnVolumeChanged(double value)
     {

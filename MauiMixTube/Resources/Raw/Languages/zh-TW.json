@@ -67,8 +67,11 @@
     "Settings_RecentlyPlayedCount" : "最近播放數量",
     "Settings_RecentlyPlayedCountDesc" : "設定最近播放最多紀錄的歌曲數量",
 
-    "Settings_DeviceName":"輸出裝置",
-    "Settings_AudioDevice_Default":"預設 (跟隨系統)",
+    "Settings_DeviceName" : "輸出裝置",
+    "Settings_AudioDevice_Default" : "預設 (跟隨系統)",
+
+    "Settings_AlcReopenEnabled" : "啟用 ALC 重新開啟裝置",
+    "Settings_AlcReopenEnabledDesc" : "切換音訊輸出設備時，優先使用 alc reopen 取代 rebuild context。這能提供更流暢的切換體驗 並減少音訊中斷。",
 
     "Settings_Eq" : "等化器",
     "Settings_AutoEq" : "動態等化器",

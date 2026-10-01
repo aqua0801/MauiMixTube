@@ -4,6 +4,7 @@ using MauiMixTube.Helpers;
 using MauiMixTube.Managers;
 using MauiMixTube.Messages;
 using OpenTK.Audio.OpenAL;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Xml.Linq;
@@ -300,6 +301,26 @@ namespace MauiMixTube.Audio
         {
             lock (_sync)
             {
+                if(_settingsManager.AlcReopenEnabled)
+                {
+                    try
+                    {
+                        var success = OpenALNative.AlcReopenDeviceSoft(
+                            _device,
+                            deviceName,
+                            null
+                            );
+
+                        if (success)
+                            return;
+                    }
+                    catch(Exception e)
+                    {
+                        System.Diagnostics.Debug.WriteLine($"[PcmPlayer] Failed to reopen device : {e.Message}");
+                        System.Diagnostics.Debug.WriteLine($"[PcmPlayer] Fallback to rebuild context...");
+                    }
+                }
+
                 ThrowIfDisposed();
 
                 if (string.Equals(
@@ -320,12 +341,6 @@ namespace MauiMixTube.Audio
 
                 if (_currentStream is not null)
                 {
-                    // Fire-and-forget is avoided here intentionally.
-                    // The caller can continue playback through the
-                    // existing StreamAsync loop after buffers are rebuilt.
-                    //
-                    // Actual stream seeking is performed asynchronously
-                    // by starting a small recovery task.
                     _ = RestoreAfterDeviceSwitchAsync(
                         _currentStream,
                         position,
@@ -740,8 +755,7 @@ namespace MauiMixTube.Audio
                 ?? string.Empty;
         }
 
-        private void RecreateOpenAlDeviceLocked(
-            string deviceName)
+        private void RecreateOpenAlDeviceLocked(string deviceName)
         {
             AL.SourceStop(_source);
 
@@ -916,6 +930,58 @@ namespace MauiMixTube.Audio
                 CallingConvention = CallingConvention.Cdecl)]
             private static extern ALDevice alcOpenDevice(
                 IntPtr devicename);
+
+            [DllImport("openal32.dll", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
+            private static extern IntPtr alcGetProcAddress(IntPtr device, string funcname);
+
+            [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+            [return: MarshalAs(UnmanagedType.U1)]
+            private unsafe delegate bool alcReopenDeviceSOFTDelegate(
+                IntPtr device,
+                [MarshalAs(UnmanagedType.LPUTF8Str)] string? devicename,
+                int* attribs);
+
+            private static alcReopenDeviceSOFTDelegate? _alcReopenDeviceSOFT;
+            private static readonly Lock _alcLck = new();
+
+            public static unsafe bool AlcReopenDeviceSoft(
+                ALDevice device,
+                string? deviceName,
+                ReadOnlySpan<int> attribs)
+            {
+                if (attribs.IsEmpty)
+                    return AlcReopenDeviceSoftUnsafe(device, deviceName, null);
+
+                Span<int> buf = attribs.Length < 64
+                    ? stackalloc int[attribs.Length + 1]
+                    : new int[attribs.Length + 1];
+                attribs.CopyTo(buf);
+                buf[^1] = 0;
+
+                fixed (int* p = buf)  
+                {
+                    return AlcReopenDeviceSoftUnsafe(device, deviceName, p);
+                }
+            }
+
+            private static unsafe bool AlcReopenDeviceSoftUnsafe(
+                ALDevice device, string? deviceName, int* attribs)
+            {
+                alcReopenDeviceSOFTDelegate? fn;
+                lock (_alcLck)
+                {
+                    fn = _alcReopenDeviceSOFT;
+                    if (fn is null)
+                    {
+                        IntPtr proc = alcGetProcAddress(device, "alcReopenDeviceSOFT");
+                        if (proc == IntPtr.Zero) return false;
+
+                        fn = Marshal.GetDelegateForFunctionPointer<alcReopenDeviceSOFTDelegate>(proc);
+                        _alcReopenDeviceSOFT = fn;
+                    }
+                }
+                return fn(device, deviceName, attribs);
+            }
 
             public static unsafe ALDevice OpenDeviceUtf8(string name)
             {

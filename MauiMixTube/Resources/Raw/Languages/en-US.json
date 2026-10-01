@@ -70,6 +70,9 @@
     "Settings_DeviceName":"Output Device",
     "Settings_AudioDevice_Default":"Default (System)",
 
+    "Settings_AlcReopenEnabled" : "Enable ALC Reopen Device",
+    "Settings_AlcReopenEnabledDesc" : "When switching audio devices, prioritize using alc reopen over rebuild context to provide a smoother transition and reduce audio interruption.",
+
     "Settings_Eq" : "Equalizer",
     "Settings_AutoEq" : "Real-time Auto-EQ",
     "Settings_AutoEqDesc" : "Automatically optimizes your audio in real-time to match the Harman Target curve.",
